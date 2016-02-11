@@ -11,7 +11,7 @@ ifeq ($(MACOS), 1)
     CFLAGS+=-DMACOS
 endif
 
-all: $(SOURCES) $(EXECUTABLE) simulation_multithread
+all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
