@@ -1,7 +1,7 @@
 # This is a general solution for a makefile
 
 CC=gcc
-CFLAGS=-c -ansi -std=c99 -Wall -mavx2
+CFLAGS=-c -ansi -std=c99 -Wall
 LDFLAGS=-pthread
 SOURCES=KNNSim.c KNNAlgorithm.c Dataset.c
 OBJECTS=$(SOURCES:.c=.o)
