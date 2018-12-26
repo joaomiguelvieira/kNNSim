@@ -1,0 +1,12 @@
+============== SUMMARY ==============
+        N Nearest | 4
+        N Classes | 4
+    N Coordinates | 6
+   N Test Samples | 576
+N Control Samples | 1152
+-------------------------------------
+   N Accelerators | 16
+-------------------------------------
+    Hardware Time | 4854.58 us
+  Hardware Cycles | 3233150
+=====================================
