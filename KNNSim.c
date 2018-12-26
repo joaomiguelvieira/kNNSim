@@ -9,7 +9,18 @@ int main(int argc, char const *argv[]) {
   RunType runType         = plain;        // type of run
   int     inputFile       = 0;            // optional binary input file
   char    *inputFilename  = NULL;
-  int     numberOfThreads = get_nprocs(); // number of threads
+  int     numberOfThreads;
+  char    hostname[BUFLEN];
+
+  // default number of threads
+#ifndef MACOS
+  numberOfThreads = get_nprocs();
+#else
+  size_t sizeOfInt = sizeof(int);
+  sysctlbyname("machdep.cpu.core_count", &numberOfThreads, &sizeOfInt, NULL, 0);
+#endif
+
+  gethostname(hostname, (size_t) BUFLEN);
 
   // checking for right number of arguments
   if (argc < 6) {
@@ -63,9 +74,10 @@ int main(int argc, char const *argv[]) {
   gettimeofday(&endTime, NULL);
 
   // print summary
+  printf("         Hostname: %s\n", hostname);
   printf("         Run type: %d\n", runType);
   printf("Number of threads: %d\n", numberOfThreads);
-  printf("     Time elapsed: %lf seconds\n", getElapsedTime(startTime, endTime));
+  printf(" Time elapsed [s]: %lf\n", getElapsedTime(startTime, endTime));
 
   destroyDataset(dataset);
 
