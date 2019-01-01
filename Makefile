@@ -46,4 +46,3 @@ simulation_multithread:
 
 clean:
 	rm -rf *.o *.~ $(EXECUTABLE) *.gch
-	cd datasets && $(MAKE) -w clean
