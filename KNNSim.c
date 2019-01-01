@@ -17,7 +17,7 @@ int main(int argc, char const *argv[]) {
   numberOfThreads = get_nprocs();
 #else
   size_t sizeOfInt = sizeof(int);
-  sysctlbyname("machdep.cpu.core_count", &numberOfThreads, &sizeOfInt, NULL, 0);
+  sysctlbyname("hw.logicalcpu", &numberOfThreads, &sizeOfInt, NULL, 0);
 #endif
 
   gethostname(hostname, (size_t) BUFLEN);
