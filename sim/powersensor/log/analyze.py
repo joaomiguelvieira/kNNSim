@@ -107,6 +107,7 @@ print("""LOAD POWER: minimum : {}
 
 x = get_column(load_power, 0)
 y = get_column(load_power, 1)
+
 plt.plot(x, y)
 plt.xlim(0, max(x))
 plt.ylim(0, max(y) + 0.1 * max(y))
