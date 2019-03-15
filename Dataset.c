@@ -46,9 +46,9 @@ Dataset *loadDataset(int numberControl, int numberClassify, int numberFeatures, 
   Dataset *dataset = initDataset(numberControl, numberClassify, numberFeatures, numberClasses);
 
   // read dataset from file
-  fread(dataset->controlSamples[0],  sizeof(float), numberControl  * numberFeatures, inputFile);
-  fread(dataset->classifySamples[0], sizeof(float), numberClassify * numberFeatures, inputFile);
-  fread(dataset->controlClasses,     sizeof(int),   numberControl,                   inputFile);
+  assert(fread(dataset->controlSamples[0],  sizeof(float), numberControl  * numberFeatures, inputFile));
+  assert(fread(dataset->classifySamples[0], sizeof(float), numberClassify * numberFeatures, inputFile));
+  assert(fread(dataset->controlClasses,     sizeof(int),   numberControl,                   inputFile));
 
   // close input file
   fclose(inputFile);
