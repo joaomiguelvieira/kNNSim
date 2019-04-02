@@ -2,9 +2,18 @@
 
 This repository contains a simulator written in C language to evaluate the performance of the K-Nearest Neighbors clustering algorithm in different platforms, the KNNSim. The content of this repository is as follows:
 * `./` contains the source of the simulator. To compile:
-  - **Linux:** just type `make`;
+  - **Linux:** type `make`;
   - **macOS:** define `MACOS=1` as a bash variable and type `make`.
-* `./datasets/` contains the raw data of seven datasets that were download from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/index.php) and precompiled binaries that can be used out of the box with KNNSim.
+* `./datasets/` contains the raw data of seven datasets that were download from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/index.php) and precompiled binaries that can be used out of the box with KNNSim:
+  * [Iris](https://archive.ics.uci.edu/ml/datasets/Iris)
+  * [Wine](https://archive.ics.uci.edu/ml/datasets/Wine)
+  * [Breast Cancer Wisconsin (Diagnostic)](https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29)
+  * [Car Evaluation](https://archive.ics.uci.edu/ml/datasets/Car+Evaluation)
+  * [Abalone](https://archive.ics.uci.edu/ml/datasets/Abalone)
+  * [Human Activity Recognition Using Smartphones](https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones)
+  * [Bank Marketing](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
+  * [Poker Hand](https://archive.ics.uci.edu/ml/datasets/Poker+Hand)
+  * Additionally, there is source code on `./datasets/8_dataset_gen` to generate random datasets. This tool is, however, unnecessary since KNNSim generates random datasets natively whenever a binary file is not provided.
 * `./sim/` contains some experimental results extracted from several runnings on different systems.
 
 ## Usage
