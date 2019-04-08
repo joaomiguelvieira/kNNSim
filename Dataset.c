@@ -56,6 +56,16 @@ Dataset *loadDataset(int numberControl, int numberClassify, int numberFeatures, 
   return dataset;
 }
 
+int checkDatasetIntegrity(Dataset *dataset) {
+  for (int i = 0; i < dataset->numberControl; i++)
+    if (dataset->controlClasses[i] < 0 || dataset->controlClasses[i] >= dataset->numberClasses) {
+      fprintf(stderr, "Dataset is corrupt! Classes have to be in the range [0, %d[. Specified class is %d.\n", dataset->numberClasses, dataset->controlClasses[i]);
+      return 1;
+    }
+
+    return 0;
+}
+
 Dataset *randDataset(int numberControl, int numberClassify, int numberFeatures, int numberClasses) {
   // allocate dataset
   Dataset *dataset = initDataset(numberControl, numberClassify, numberFeatures, numberClasses);

@@ -62,9 +62,11 @@ int main(int argc, char const *argv[]) {
   if (runType != multithread)
     numberOfThreads = 1;
 
-  // if an input file is provided, use it; otherwise generate the dataset
-  if (inputFile == 1)
+  // if an input file is provided, use it and check for dataset integrity; otherwise generate the dataset
+  if (inputFile == 1) {
     dataset = loadDataset(numberControl, numberClassify, numberFeatures, numberClasses, inputFilename);
+    assert(!checkDatasetIntegrity(dataset));
+  }
   else
     dataset = randDataset(numberControl, numberClassify, numberFeatures, numberClasses);
 

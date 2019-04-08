@@ -35,6 +35,7 @@ typedef struct Dataset_ {
  */
 Dataset *initDataset(int numberControl, int numberClassify, int numberFeatures, int numberClasses);
 Dataset *loadDataset(int numberControl, int numberClassify, int numberFeatures, int numberClasses, char *inputFilename);
+int      checkDatasetIntegrity(Dataset *dataset);
 Dataset *randDataset(int numberControl, int numberClassify, int numberFeatures, int numberClasses);
 
 void destroyDataset(Dataset *dataset);
