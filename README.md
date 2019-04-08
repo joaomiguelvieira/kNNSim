@@ -1,6 +1,12 @@
 # KNNSimulator
 
-This repository contains a simulator written in C language to evaluate the performance of the K-Nearest Neighbors clustering algorithm in different platforms, the KNNSim. The content of this repository is as follows:
+This repository contains a simulator written in C language to evaluate the performance of the K-Nearest Neighbors clustering algorithm in different platforms, the KNNSim.
+
+1. [Content of this repository](## Content of this repository)
+
+## Content of this repository
+
+The content of this repository is as follows:
 * `./` contains the source of the simulator. To compile:
   - **Linux:** type `make`;
   - **macOS:** define `MACOS=1` as a bash variable and type `make`.
