@@ -3,6 +3,8 @@
 This repository contains a simulator written in C language to evaluate the performance of the K-Nearest Neighbors clustering algorithm in different platforms, the KNNSim.
 
 1. [Content of this repository](#content-of-this-repository)
+2. [Usage](#usage)
+3. [How to compile datasets](#how-to-compile-datasets)
 
 ## Content of this repository
 
@@ -54,4 +56,26 @@ The output can be, for instance:
          Run type: 1
 Number of threads: 8
  Elapsed time [s]: 66.813626
+```
+
+## How to compile datasets
+
+Datasets have to have a fixed format to be used by KNNSim. The file containing the training samples, the test samples and the classes of the training samples has to be binary and is organized as follows:
+1. `N * M` floats corresponding to the training samples. Let A be the universe of training samples with `A(i) = a(i, 0), a(i, 1), ..., a(i, M-1)` a training sample and respective coordinates, then it should be organized in the binary dataset file in the format:
+```
+  a(0, 0),   a(0, 1), ...,   a(0, M-1)
+  a(1, 0),   a(1, 1), ...,   a(1, M-1)
+     :          :               :
+a(N-1, 0), a(N-1, 1), ..., a(N-1, M-1)
+```
+2. `N' * M` floats corresponding to the test samples. Let B be the universe of test samples with `B(i) = b(i, 0), b(i, 1), ..., b(i, M-1)` a training sample and respective coordinates, then it should be organized in the binary dataset file in the format:
+```
+   b(0, 0),    b(0, 1), ...,    b(0, M-1)
+   b(1, 0),    b(1, 1), ...,    b(1, M-1)
+      :           :                :
+b(N'-1, 0), b(N'-1, 1), ..., b(N'-1, M-1)
+```
+3. `N` integers corresponding to the classes of the training samples. Let `C(A(i))` be the class of the training sample `i`, then the classes should be organized in the binary dataset file as follows:
+```
+C(A(0)), C(A(1)), ..., C(A(N-1))
 ```
