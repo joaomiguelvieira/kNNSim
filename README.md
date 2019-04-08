@@ -2,7 +2,7 @@
 
 This repository contains a simulator written in C language to evaluate the performance of the K-Nearest Neighbors clustering algorithm in different platforms, the KNNSim.
 
-1. [Content of this repository](## Content of this repository)
+1. [Content of this repository](#content-of-this-repository)
 
 ## Content of this repository
 
