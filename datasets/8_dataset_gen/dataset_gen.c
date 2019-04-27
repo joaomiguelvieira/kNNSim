@@ -34,7 +34,12 @@ int main(int argc, char **argv) {
 
   fclose(bin);
 
-  FILE *text = fopen((argc > 5) ? argv[5] : "output.txt", "w");
+  FILE *text = fopen((argc > 5) ? argv[6] : "output.txt", "w");
+
+  fprintf(text, "-TRAINING: %d\n", numCtrl);
+  fprintf(text, "-----TEST: %d\n", numTest);
+  fprintf(text, "-FEATURES: %d\n", numCoords);
+  fprintf(text, "--CLASSES: %d\n\n", numClass);
 
   for(int i = 0; i < (numCtrl + numTest) * numCoords; i++) {
     fprintf(text, "%.2f ", dataSet[i]);
