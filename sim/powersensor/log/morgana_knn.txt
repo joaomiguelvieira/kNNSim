@@ -1,4 +1,0 @@
-         Hostname: morgana.joaomiguelvieira.com
-         Run type: 1
-Number of threads: 8
- Time elapsed [s]: 49.230556
