@@ -1,0 +1,48 @@
+  *-firmware
+       description: BIOS
+       vendor: American Megatrends Inc.
+       physical id: 0
+       version: P1.10
+       date: 10/20/2015
+       size: 64KiB
+       capacity: 1MiB
+       capabilities: pci upgrade shadowing cdboot bootselect socketedrom edd int13floppy1200 int13floppy720 int13floppy2880 int5printscreen int9keyboard int14serial int17printer int10video acpi usb ls120boot zipboot biosbootspecification netboot
+  *-cache:0
+       description: L1 cache
+       physical id: 5
+       slot: L1-Cache
+       size: 128KiB
+       capacity: 128KiB
+       capabilities: internal write-back data
+       configuration: level=1
+  *-cache:1
+       description: L2 cache
+       physical id: 6
+       slot: L2-Cache
+       size: 8MiB
+       capacity: 8MiB
+       capabilities: internal write-back unified
+       configuration: level=2
+  *-memory
+       description: System Memory
+       physical id: f
+       slot: System board or motherboard
+       size: 4GiB
+     *-bank:0
+          description: DIMM SDRAM Synchronous
+          product: ModulePartNumber00
+          vendor: Manufacturer00
+          physical id: 0
+          serial: SerNum00
+          slot: DIMM0
+          size: 2GiB
+          width: 64 bits
+     *-bank:1
+          description: DIMM SDRAM Synchronous
+          product: ModulePartNumber01
+          vendor: Manufacturer01
+          physical id: 1
+          serial: SerNum01
+          slot: DIMM1
+          size: 2GiB
+          width: 64 bits

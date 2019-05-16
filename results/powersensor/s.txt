@@ -1,0 +1,2 @@
+@echo off
+python \work\power\powersensor-master\logPower.py --log pwr1.csv

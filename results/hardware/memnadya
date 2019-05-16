@@ -1,0 +1,57 @@
+  *-firmware
+       description: BIOS
+       vendor: American Megatrends Inc.
+       physical id: 0
+       version: 1103
+       date: 05/14/2015
+       size: 64KiB
+       capacity: 8MiB
+       capabilities: pci apm upgrade shadowing cdboot bootselect socketedrom edd int13floppy1200 int13floppy720 int13floppy2880 int5printscreen int9keyboard int14serial int17printer acpi usb biosbootspecification uefi
+  *-memory
+       description: System memory
+       physical id: 1
+       size: 8GiB
+     *-bank:0
+          description: DIMM DDR3 Synchronous 1600 MHz (0,6 ns)
+          product: KHX1600C10D3/8G
+          vendor: Kingston
+          physical id: 0
+          serial: 673DA45E
+          slot: ChannelA-DIMM0
+          size: 4GiB
+          width: 64 bits
+          clock: 1600MHz (0.6ns)
+     *-bank:1
+          description: DIMM DDR3 Synchronous 1600 MHz (0,6 ns)
+          product: KHX1600C10D3/8G
+          vendor: Kingston
+          physical id: 1
+          serial: 743E47B6
+          slot: ChannelB-DIMM0
+          size: 4GiB
+          width: 64 bits
+          clock: 1600MHz (0.6ns)
+  *-cache:0
+       description: L1 cache
+       physical id: 3d
+       slot: CPU Internal L1
+       size: 128KiB
+       capacity: 128KiB
+       capabilities: internal write-back
+       configuration: level=1
+  *-cache:1
+       description: L2 cache
+       physical id: 3e
+       slot: CPU Internal L2
+       size: 512KiB
+       capacity: 512KiB
+       capabilities: internal write-back unified
+       configuration: level=2
+  *-cache:2
+       description: L3 cache
+       physical id: 3f
+       slot: CPU Internal L3
+       size: 3MiB
+       capacity: 3MiB
+       capabilities: internal write-back unified
+       configuration: level=3
