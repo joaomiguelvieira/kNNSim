@@ -22,7 +22,7 @@ The content of this repository is as follows:
   * [Bank Marketing](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
   * [Poker Hand](https://archive.ics.uci.edu/ml/datasets/Poker+Hand)
   * Additionally, there is source code on `./datasets/8_dataset_gen` to generate random datasets. This tool is, however, unnecessary since KNNSim generates random datasets natively whenever a binary file is not provided.
-* `./sim/` contains some experimental results extracted from several runnings on different systems.
+* `./results/` contains some experimental results extracted from several runnings on different systems.
 
 ## Usage
 
