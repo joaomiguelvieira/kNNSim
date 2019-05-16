@@ -21,6 +21,7 @@ The content of this repository is as follows:
   * [Human Activity Recognition Using Smartphones](https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones)
   * [Bank Marketing](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
   * [Poker Hand](https://archive.ics.uci.edu/ml/datasets/Poker+Hand)
+  * [Ionosphere](https://archive.ics.uci.edu/ml/datasets/ionosphere)
   * Additionally, there is source code on `./datasets/8_dataset_gen` to generate random datasets. This tool is, however, unnecessary since KNNSim generates random datasets natively whenever a binary file is not provided.
 * `./results/` contains some experimental results extracted from several runnings on different systems.
 
