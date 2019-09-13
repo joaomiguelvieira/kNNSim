@@ -96,7 +96,7 @@ void multithreadKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distan
   for (int i = 0; i < numberOfThreads; i++) {
     assert(pthread_join(threads[i], NULL) == 0);
 
-    for (int j = 1; i < args[j].argc; j++)
+    for (int j = 1; j < args[i].argc; j++)
       free(args[i].argv[j]);
 
     free(args[i].argv);
