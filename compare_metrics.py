@@ -28,6 +28,6 @@ for metric in metrics:
 			print "\tDataset: " + dataset
 			for k in k_list:
 				print "\t\tk = " + str(k)
-				output_file.write("100" + ",")#subprocess.check_output(["./knnsim", datasets[dataset][0], datasets[dataset][1], datasets[dataset][2], datasets[dataset][3], str(k), "-f", datasets[dataset][4], "-s", datasets[dataset][5], "-d", metric, "-r", "multithread"]).split("kNN accuracy: ")[1].split("%")[0] + ",")
+				output_file.write(subprocess.check_output(["./knnsim", datasets[dataset][0], datasets[dataset][1], datasets[dataset][2], datasets[dataset][3], str(k), "-f", datasets[dataset][4], "-s", datasets[dataset][5], "-d", metric, "-r", "multithread"]).split("kNN accuracy: ")[1].split("%")[0] + ",")
 
 			output_file.write("\n")
