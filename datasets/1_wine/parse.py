@@ -13,6 +13,7 @@ dataSet = open("wine.data", "r")
 ctrlSamples = []
 testSamples = []
 classes = []
+solution = []
 
 index = 0
 
@@ -21,6 +22,7 @@ for line in dataSet:
     attributes = line.split(',')
 
     if index % 3 == 0:
+        solution.append(int(attributes[0]) - 1)
         del attributes[0]
         testSamples.append(attributes)
     else:
@@ -56,3 +58,7 @@ config.write(str(attr) + " # features\n")
 config.write("3 # classes\n")
 
 config.close()
+
+with open("wine.solution", "w") as solution_file:
+    for item in solution:
+        solution_file.write(str(item) + "\n");

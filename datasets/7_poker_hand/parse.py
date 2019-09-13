@@ -11,6 +11,7 @@ def merge(list_of_lists):
 ctrlSamples = []
 testSamples = []
 classes = []
+solution = []
 
 dataSet = open("poker-hand-training-true.data", "r")
 
@@ -30,6 +31,7 @@ for line in dataSet:
     line = line.rstrip("\n")
     attributes = line.split(',')
 
+    solution.append(attributes[-1])
     del attributes[-1]
     testSamples.append(attributes)
 
@@ -58,3 +60,7 @@ config.write(str(attr) + " # features\n")
 config.write("10 # classes\n")
 
 config.close()
+
+with open("poker.solution", "w") as solution_file:
+    for item in solution:
+        solution_file.write(str(item) + "\n");

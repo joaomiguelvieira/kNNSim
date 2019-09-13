@@ -13,6 +13,7 @@ dataSet = open("wdbc.data", "r")
 ctrlSamples = []
 testSamples = []
 classes = []
+solution = []
 
 index = 0
 
@@ -21,6 +22,11 @@ for line in dataSet:
     attributes = line.split(',')
 
     if index % 3 == 0:
+        if attributes[1] == 'B':
+            solution.append(0)
+        else:
+            solution.append(1)
+
         del attributes[1]
         del attributes[0]
         testSamples.append(attributes)
@@ -62,3 +68,7 @@ config.write(str(attr) + " # features\n")
 config.write("2 # classes\n")
 
 config.close()
+
+with open("breast_cancer_wisconsin.solution", "w") as solution_file:
+    for item in solution:
+        solution_file.write(str(item) + "\n");

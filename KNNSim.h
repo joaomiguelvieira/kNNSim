@@ -27,5 +27,6 @@
  */
 void usage(char *executable);
 double getElapsedTime(struct timeval startTime, struct timeval endTime);
+float calculateAccuracy(Dataset *dataset, char *solutionFilename);
 
 #endif

@@ -2,7 +2,7 @@
 
 CC=gcc
 CFLAGS=-c -ansi -std=c99 -Wall -O3
-LDFLAGS=-pthread
+LDFLAGS=-pthread -lm
 SOURCES=KNNSim.c KNNAlgorithm.c Dataset.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=knnsim

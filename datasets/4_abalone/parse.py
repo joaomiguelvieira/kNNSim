@@ -13,6 +13,7 @@ dataSet = open("abalone.data", "r")
 ctrlSamples = []
 testSamples = []
 classes = []
+solution = []
 
 index = 0
 
@@ -28,6 +29,7 @@ for line in dataSet:
         attributes[0] = '2'
 
     if index % 3 == 0:
+        solution.append(attributes[-1])
         del attributes[-1]
         testSamples.append(attributes)
     else:
@@ -63,3 +65,7 @@ config.write(str(attr) + " # features\n")
 config.write("29 # classes\n")
 
 config.close()
+
+with open("abalone.solution", "w") as solution_file:
+    for item in solution:
+        solution_file.write(str(item) + "\n");

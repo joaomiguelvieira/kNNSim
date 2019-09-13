@@ -13,6 +13,7 @@ dataSet = open("iris.data", "r")
 ctrlSamples = []
 testSamples = []
 classes = []
+solution = []
 
 index = 0
 
@@ -21,6 +22,13 @@ for line in dataSet:
     attributes = line.split(',')
 
     if index % 3 == 0:
+        if attributes[4] == "Iris-setosa":
+            solution.append(0)
+        elif attributes[4] == "Iris-versicolor":
+            solution.append(1)
+        else:
+            solution.append(2)
+
         del attributes[-1]
         testSamples.append(attributes)
     else:
@@ -60,3 +68,7 @@ config.write("4 # features\n")
 config.write("3 # classes\n")
 
 config.close()
+
+with open("iris.solution", "w") as solution_file:
+    for item in solution:
+        solution_file.write(str(item) + "\n");

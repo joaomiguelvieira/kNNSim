@@ -13,6 +13,7 @@ dataSet = open("ionosphere.data", "r")
 ctrlSamples = []
 testSamples = []
 classes = []
+solution = []
 
 index = 0
 
@@ -21,6 +22,11 @@ for line in dataSet:
     attributes = line.split(',')
 
     if index % 4 == 0:
+        if attributes[-1] == "g":
+            solution.append(0)
+        else:
+            solution.append(1)
+
         del attributes[-1]
         testSamples.append(attributes)
     else:
@@ -58,3 +64,7 @@ config.write("34 # features\n")
 config.write("2 # classes\n")
 
 config.close()
+
+with open("ionosphere.solution", "w") as solution_file:
+    for item in solution:
+        solution_file.write(str(item) + "\n");

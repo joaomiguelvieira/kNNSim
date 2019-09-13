@@ -13,6 +13,7 @@ dataSet = open("car.data", "r")
 ctrlSamples = []
 testSamples = []
 classes = []
+solution = []
 
 index = 0
 
@@ -75,6 +76,7 @@ for line in dataSet:
         attributes[6] = '3'
 
     if index % 3 == 0:
+        solution.append(attributes[-1])
         del attributes[-1]
         testSamples.append(attributes)
     else:
@@ -110,3 +112,7 @@ config.write(str(attr) + " # features\n")
 config.write("4 # classes\n")
 
 config.close()
+
+with open("car_evaluation.solution", "w") as solution_file:
+    for item in solution:
+        solution_file.write(str(item) + "\n");
