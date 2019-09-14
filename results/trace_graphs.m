@@ -20,37 +20,37 @@ pl.dynamic_pcfg1 = 1.700 - ps.dynamic_pcfg1;
 
 % timings spent by accelerators
 accel.freq         = 100E6;
-accel.cores        = xlsread("results.xlsx", 4, "A1:G1");
+accel.cores        = xlsread("results.xlsx", 3, "A1:G1");
 accel.time         = zeros(7, length(accel.cores));
-accel.time(1:5, :) = xlsread("results.xlsx", 4, "A2:G6");
-accel.time(6:7, :) = xlsread("results.xlsx", 4, "A8:G9");
+accel.time(1:5, :) = xlsread("results.xlsx", 3, "A2:G6");
+accel.time(6:7, :) = xlsread("results.xlsx", 3, "A8:G9");
 accel.time         = accel.time ./ 1E6;
 
-accel_pcfg1.cores        = xlsread("results.xlsx", 5, "B1:E1");
+accel_pcfg1.cores        = xlsread("results.xlsx", 4, "B1:E1");
 accel_pcfg1.time         = zeros(7, length(accel_pcfg1.cores));
-accel_pcfg1.time(1:5, :) = xlsread("results.xlsx", 5, "B2:E6");
-accel_pcfg1.time(6:7, :) = xlsread("results.xlsx", 5, "B8:E9");
+accel_pcfg1.time(1:5, :) = xlsread("results.xlsx", 4, "B2:E6");
+accel_pcfg1.time(6:7, :) = xlsread("results.xlsx", 4, "B8:E9");
 accel_pcfg1.time         = accel_pcfg1.time ./ 1E6;
 
 % processor times
 processor.time      = zeros(7,1);
-processor.time(1:5) = xlsread("results.xlsx", 6, "B2:B6");
-processor.time(6:7) = xlsread("results.xlsx", 6, "B8:B9");
+processor.time(1:5) = xlsread("results.xlsx", 5, "B2:B6");
+processor.time(6:7) = xlsread("results.xlsx", 5, "B8:B9");
 
 % another case study
-zynq.var_knn.num        = xlsread("results.xlsx", 9, "B1:I1");
-zynq.var_knn.luts       = xlsread("results.xlsx", 9, "B5:I5");
-zynq.var_knn.luts_max   = xlsread("results.xlsx", 9, "J5");
-zynq.var_knn.accel_time = xlsread("results.xlsx", 9, "B2:I2") / 1E6;
-zynq.var_knn.arm_time   = xlsread("results.xlsx", 9, "B3:I3");
+zynq.var_knn.num        = xlsread("results.xlsx", 8, "B1:I1");
+zynq.var_knn.luts       = xlsread("results.xlsx", 8, "B5:I5");
+zynq.var_knn.luts_max   = xlsread("results.xlsx", 8, "J5");
+zynq.var_knn.accel_time = xlsread("results.xlsx", 8, "B2:I2") / 1E6;
+zynq.var_knn.arm_time   = xlsread("results.xlsx", 8, "B3:I3");
 
-zynq.var_training.num        = xlsread("results.xlsx", 10, "B1:N1");
-zynq.var_training.accel_time = xlsread("results.xlsx", 10, "B2:N2") / 1E6;
-zynq.var_training.arm_time   = xlsread("results.xlsx", 10, "B3:N3");
+zynq.var_training.num        = xlsread("results.xlsx", 9, "B1:N1");
+zynq.var_training.accel_time = xlsread("results.xlsx", 9, "B2:N2") / 1E6;
+zynq.var_training.arm_time   = xlsread("results.xlsx", 9, "B3:N3");
 
-zynq.var_features.num        = xlsread("results.xlsx", 11, "B1:K1");
-zynq.var_features.accel_time = xlsread("results.xlsx", 11, "B2:K2") / 1E6;
-zynq.var_features.arm_time   = xlsread("results.xlsx", 11, "B3:K3");
+zynq.var_features.num        = xlsread("results.xlsx", 10, "B1:K1");
+zynq.var_features.accel_time = xlsread("results.xlsx", 10, "B2:K2") / 1E6;
+zynq.var_features.arm_time   = xlsread("results.xlsx", 10, "B3:K3");
 
 %% calculate results
 % performance variation with number of cores
