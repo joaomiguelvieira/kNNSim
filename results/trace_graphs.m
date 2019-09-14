@@ -52,6 +52,16 @@ zynq.var_features.num        = xlsread("results.xlsx", 10, "B1:K1");
 zynq.var_features.accel_time = xlsread("results.xlsx", 10, "B2:K2") / 1E6;
 zynq.var_features.arm_time   = xlsread("results.xlsx", 10, "B3:K3");
 
+metrics_k = xlsread("results.xlsx", 12, "B2:V2");
+[~, metrics_datasets] = xlsread("results.xlsx", 12, "A3:A9");
+
+chiSquare =  xlsread("results.xlsx", 12, "B3:V9");
+cosine = xlsread("results.xlsx", 12, "B12:V18");
+euclidean = xlsread("results.xlsx", 12, "B21:V27");
+manhattan = xlsread("results.xlsx", 12, "B30:V36");
+minkowsky = xlsread("results.xlsx", 12, "B39:V45");
+ssd = xlsread("results.xlsx", 12, "B48:V54");
+
 %% calculate results
 % performance variation with number of cores
 results.var_accel = [accel.cores; accel.time(1, :); accel.time(end, :)];
@@ -336,3 +346,21 @@ ylim([0, 24]);
 yticks(0:4:24);
 yticklabels({"2^{-13}", "2^{-7}", "2^{-5}", "2^{-1}", "2^{3}", "2^{7}", "2^{11}"});
 set(gca, 'YGrid', 'on', 'XGrid', 'off', 'YMinorGrid', 'on', 'XMinorGrid', 'off');
+
+%% plot results of accuracy
+
+for i=1:length(metrics_datasets)
+    figure();
+    plot(metrics_k, chiSquare(i,:), "-o"); hold on;
+    plot(metrics_k, cosine(i,:), "-o"); hold on;
+    plot(metrics_k, euclidean(i,:), "-o"); hold on;
+    plot(metrics_k, manhattan(i,:), "-o"); hold on;
+    plot(metrics_k, minkowsky(i,:), "-o"); hold on;
+    plot(metrics_k, ssd(i,:), "-o");
+    legend(["Chi-square", "Cosine", "Euclidean", "Manhattan", "Minkowsky", "Sum of squared differences"]);
+    title(metrics_datasets(i));
+    ylabel("Classification accuracy");
+    xlabel("kNN");
+    xlim([metrics_k(1), metrics_k(end)]);
+    ylim([0, 100]);
+end
