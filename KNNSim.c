@@ -13,6 +13,7 @@ int main(int argc, char const *argv[]) {
   char           *inputFilename    = NULL;
   int            solutionFile      = 0;     // optional solution file
   char           *solutionFilename = NULL;
+  int            profile           = 0;     // indicates if algorithm should be profiled
   int            numberOfThreads;
   char           hostname[BUFLEN];
 
@@ -72,6 +73,9 @@ int main(int argc, char const *argv[]) {
       solutionFile = 1;
       solutionFilename = (char *) argv[i + 1];
     }
+    else if (!strcmp(argv[i], "--profile")) {
+      profile = 1;
+    }
     // optional argument not recognized
     else {
       printf("Optional argument %s is invalid and will be ignored\n", argv[i]);
@@ -93,7 +97,7 @@ int main(int argc, char const *argv[]) {
 
   // execute knn algorithm
   gettimeofday(&startTime, NULL);
-  knnAlgorithm(runType, dataset, numberNeighbors, distanceMetric, p, numberOfThreads);
+  knnAlgorithm(runType, dataset, numberNeighbors, distanceMetric, p, numberOfThreads, profile);
   gettimeofday(&endTime, NULL);
 
   // print summary
@@ -136,10 +140,6 @@ void usage(char *executable) {
   printf("    --distance-metric, -d : distance metric ssd (sum of square differences), euclidean, cosine, chi-square, minkowsky or manhattan (default=ssd)\n");
   printf("        --minkowsky-p, -p : parameter p of minkowsky distance (default=3)\n");
   printf("      --solution-file, -s : file with the actual classes of the classified samples that allows calculating kNN accuracy (default=none)\n");
-}
-
-double getElapsedTime(struct timeval startTime, struct timeval endTime) {
-  return (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_usec - startTime.tv_usec) / 1000000.00;
 }
 
 float calculateAccuracy(Dataset *dataset, char *solutionFilename) {

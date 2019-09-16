@@ -7,6 +7,7 @@
 #include <math.h>
 #include <pthread.h>
 #include "Dataset.h"
+#include "Common.h"
 
  /*
   * structures are declared here
@@ -21,9 +22,9 @@ typedef struct Arguments_ {
 /*
  * functions are declared here
  */
-void knnAlgorithm(RunType runType, Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads);
+void knnAlgorithm(RunType runType, Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads, int profile);
 
-void plainKnn      (Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int firstSample, int lastSample);
+void plainKnn      (Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int firstSample, int lastSample, int profile);
 void multithreadKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads            );
 
 float sumOfSquareDifferences(float *sample1, float *sample2, int numberFeatures);
