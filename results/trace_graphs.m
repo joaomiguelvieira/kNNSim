@@ -351,13 +351,13 @@ set(gca, 'YGrid', 'on', 'XGrid', 'off', 'YMinorGrid', 'on', 'XMinorGrid', 'off')
 
 for i=1:length(metrics_datasets)
     figure();
-    plot(metrics_k, chiSquare(i,:), "-o"); hold on;
-    plot(metrics_k, cosine(i,:), "-o"); hold on;
-    plot(metrics_k, euclidean(i,:), "-o"); hold on;
-    plot(metrics_k, manhattan(i,:), "-o"); hold on;
-    plot(metrics_k, minkowsky(i,:), "-o"); hold on;
-    plot(metrics_k, ssd(i,:), "-o");
-    legend(["Chi-square", "Cosine", "Euclidean", "Manhattan", "Minkowsky", "Sum of squared differences"]);
+    plot(metrics_k, chiSquare(i,:), '-o'); hold on;
+    plot(metrics_k, cosine(i,:), '-o'); hold on;
+    plot(metrics_k, euclidean(i,:), '-o'); hold on;
+    plot(metrics_k, manhattan(i,:), '-o'); hold on;
+    plot(metrics_k, minkowsky(i,:), '-o'); hold on;
+    plot(metrics_k, ssd(i,:), '-o');
+    legend(["Chi-square", "Cosine", "Euclidean", "Manhattan", "Minkowsky", "Sum of squared differences"], "Location", "Southeast");
     title(metrics_datasets(i));
     ylabel("Classification accuracy");
     xlabel("kNN");
