@@ -84,9 +84,9 @@ results_pcfg1.energy   = processor_pcfg1.energy ./ accel_pcfg1.energy;
 % generate legend for number of cores
 for i=1:length(accel.cores)
     if accel.cores(i) == 1
-        results.legend_cores(i) = sprintf("%d core", accel.cores(i));
+        results.legend_cores(i) = sprintf("%d accelerator", accel.cores(i));
     else
-        results.legend_cores(i) = sprintf("%d cores", accel.cores(i));
+        results.legend_cores(i) = sprintf("%d accelerators", accel.cores(i));
     end
 end
 
@@ -244,9 +244,9 @@ xlim([0,9]);
 % generate legend for number of cores (pcfg1)
 for i=1:length(accel_pcfg1.cores)
     if accel_pcfg1.cores(i) == 1
-        results_pcfg1.legend_cores(i) = sprintf("%d core", accel_pcfg1.cores(i));
+        results_pcfg1.legend_cores(i) = sprintf("%d accelerator", accel_pcfg1.cores(i));
     else
-        results_pcfg1.legend_cores(i) = sprintf("%d cores", accel_pcfg1.cores(i));
+        results_pcfg1.legend_cores(i) = sprintf("%d accelerators", accel_pcfg1.cores(i));
     end
 end
 
