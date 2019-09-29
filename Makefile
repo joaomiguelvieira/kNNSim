@@ -3,7 +3,7 @@
 CC=gcc
 CFLAGS=-c -ansi -std=c99 -Wall -O3
 LDFLAGS=-pthread -lm
-SOURCES=KNNSim.c KNNAlgorithm.c Dataset.c
+SOURCES=KNNSim.c KNNAlgorithm.c Dataset.c Common.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=knnsim
 HOSTNAME=$(shell hostname)
