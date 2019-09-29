@@ -1,14 +1,14 @@
 #include "KNNAlgorithm.h"
 
-void knnAlgorithm(RunType runType, Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads) {
+void knnAlgorithm(RunType runType, Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads, int profile) {
   switch(runType) {
-    case plain:       plainKnn(      dataset, numberNeighbors, distanceMetric, p, 0, dataset->numberClassify); break;
-    case multithread: multithreadKnn(dataset, numberNeighbors, distanceMetric, p, numberOfThreads           ); break;
-    default:                                                                                                        ;
+    case plain:       plainKnn(      dataset, numberNeighbors, distanceMetric, p, 0, dataset->numberClassify, profile); break;
+    case multithread: multithreadKnn(dataset, numberNeighbors, distanceMetric, p, numberOfThreads                    ); break;
+    default:                                                                                                                 ;
   }
 }
 
-void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int firstSample, int lastSample) {
+void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int firstSample, int lastSample, int profile) {
   // nothing to do
   if (firstSample == lastSample)
     return;
@@ -18,8 +18,15 @@ void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetr
   int   *indexes   = (int *)   malloc(dataset->numberControl * sizeof(int)  ); assert(indexes   != NULL);
   int   *classes   = (int *)   malloc(dataset->numberClasses * sizeof(int)  ); assert(classes   != NULL);
 
+  // profiling flag
+  int profile_once = profile;
+  struct timeval startDistance, endDistance, startKnn, endKnn, startLabel, endLabel;
+
   // calculate distances from all classify samples to all control samples
   for (int i = firstSample; i < lastSample; i++) {
+    if (profile_once)
+      gettimeofday(&startDistance, NULL);
+
     // initialize indexes array and calculate distance from one classify samples to all control samples
     for (int j = 0; j < dataset->numberControl; j++) {
       indexes[j]   = j;
@@ -31,17 +38,46 @@ void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetr
                                                      manhattanDistance     (dataset->controlSamples[j], dataset->classifySamples[i], dataset->numberFeatures);
     }
 
+    if (profile_once) {
+      gettimeofday(&endDistance, NULL);
+      gettimeofday(&startKnn, NULL);
+    }
+
     // find the k closest control samples
     doubleSort(distances, indexes, dataset->numberControl, numberNeighbors);
 
+    if (profile_once) {
+      gettimeofday(&endKnn, NULL);
+      gettimeofday(&startLabel, NULL);
+    }
+
     // find the class
     dataset->classifyClasses[i] = findClass(dataset, indexes, numberNeighbors, classes);
+
+    if (profile_once) {
+      gettimeofday(&endLabel, NULL);
+      profile_once = 0;
+    }
   }
 
   // free auxiliar vectors in the end
   free(classes);
   free(indexes);
   free(distances);
+
+  // profile algorithm
+  if (profile) {
+    double durationDistance = getElapsedTime(startDistance, endDistance);
+    double durationKnn      = getElapsedTime(startKnn,      endKnn);
+    double durationLabel    = getElapsedTime(startLabel,    endLabel);
+    double totalDuration    = durationDistance + durationKnn + durationLabel;
+
+    printf("========== PROFILING ==========\n");
+    printf("       Distance Comp.: %3.2f%%\n", durationDistance * 100 / totalDuration);
+    printf("           kNN Finder: %3.2f%%\n", durationKnn * 100 / totalDuration);
+    printf("   Query Label Finder: %3.2f%%\n", durationLabel * 100 / totalDuration);
+    printf("===============================\n\n");
+  }
 }
 
 void *partialKnn(void *args) {
@@ -55,7 +91,7 @@ void *partialKnn(void *args) {
   int firstSample = (dataset->numberClassify / numberOfThreads) * threadId;
   int lastSample  = (threadId == numberOfThreads - 1) ? dataset->numberClassify : firstSample + (dataset->numberClassify / numberOfThreads);
 
-  plainKnn(dataset, numberNeighbors, distanceMetric, p, firstSample, lastSample);
+  plainKnn(dataset, numberNeighbors, distanceMetric, p, firstSample, lastSample, 0);
 
   return NULL;
 }

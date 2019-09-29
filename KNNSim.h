@@ -10,8 +10,7 @@
 #include <assert.h>
 #include "Dataset.h"
 #include "KNNAlgorithm.h"
-#include <sys/time.h>
-#include <unistd.h>
+#include "Common.h"
 
 #ifndef MACOS
 #include <sys/sysinfo.h>
@@ -26,7 +25,6 @@
  * functions are declared here
  */
 void usage(char *executable);
-double getElapsedTime(struct timeval startTime, struct timeval endTime);
 float calculateAccuracy(Dataset *dataset, char *solutionFilename);
 
 #endif
