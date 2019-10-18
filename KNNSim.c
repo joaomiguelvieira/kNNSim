@@ -1,7 +1,7 @@
 #include "KNNSim.h"
 
 int main(int argc, char const *argv[]) {
-  int numberControl, numberClassify, numberFeatures, numberClasses, numberNeighbors;
+  int numberTraining, numberTesting, numberFeatures, numberClasses, numberNeighbors;
   Dataset *dataset;
   struct timeval startTime, endTime;
 
@@ -35,8 +35,8 @@ int main(int argc, char const *argv[]) {
   }
 
   // parsing arguments
-  numberControl   = atoi(argv[1]);
-  numberClassify  = atoi(argv[2]);
+  numberTraining  = atoi(argv[1]);
+  numberTesting   = atoi(argv[2]);
   numberFeatures  = atoi(argv[3]);
   numberClasses   = atoi(argv[4]);
   numberNeighbors = atoi(argv[5]);
@@ -89,11 +89,11 @@ int main(int argc, char const *argv[]) {
 
   // if an input file is provided, use it and check for dataset integrity; otherwise generate the dataset
   if (inputFile == 1) {
-    dataset = loadDataset(numberControl, numberClassify, numberFeatures, numberClasses, inputFilename);
+    dataset = loadDataset(numberTraining, numberTesting, numberFeatures, numberClasses, inputFilename);
     assert(!checkDatasetIntegrity(dataset));
   }
   else
-    dataset = randDataset(numberControl, numberClassify, numberFeatures, numberClasses);
+    dataset = randDataset(numberTraining, numberTesting, numberFeatures, numberClasses);
 
   // execute knn algorithm
   gettimeofday(&startTime, NULL);
@@ -124,18 +124,18 @@ int main(int argc, char const *argv[]) {
 }
 
 void usage(char *executable) {
-  printf("[USAGE]: %s <#control> <#classify> <#features> <#classes> <#neighbors> [options]\n\n", executable);
+  printf("[USAGE]: %s <#training> <#testing> <#features> <#classes> <#neighbors> [options]\n\n", executable);
 
-  printf("    #control : size of the control universe\n");
-  printf("   #classify : number of samples to be classified\n");
+  printf("   #training : size of the training subset\n");
+  printf("    #testing : size of the testing subset\n");
   printf("   #features : number of features per each sample\n");
-  printf("    #classes : number of different classes in the control universe (smaller than #control)\n");
-  printf("  #neighbors : (k) number of closest neighbors needed to classify a sample\n\n");
+  printf("    #classes : number of different classes in the training subset (smaller than #training)\n");
+  printf("  #neighbors : (k) number of closest neighbors needed to testing a sample\n\n");
 
   printf("[options] \n\n");
   printf("           --run-type, -r : run-type plain or multithread (default=plain)\n");
   printf("  --number-of-threads, -t : number of threads and should be used with -r (default=1)\n");
-  printf("         --input-file, -f : binary file that includes control samples, classify samples and classes (default=none)\n");
+  printf("         --input-file, -f : binary file that includes training samples, testing samples and classes (default=none)\n");
 
   printf("    --distance-metric, -d : distance metric ssd (sum of square differences), euclidean, cosine, chi-square, minkowsky or manhattan (default=ssd)\n");
   printf("        --minkowsky-p, -p : parameter p of minkowsky distance (default=3)\n");
@@ -150,11 +150,11 @@ float calculateAccuracy(Dataset *dataset, char *solutionFilename) {
   FILE *solutionFile = fopen(solutionFilename, "r");
   assert(solutionFile != NULL);
 
-  for (int i = 0; i < dataset->numberClassify; i++) {
+  for (int i = 0; i < dataset->numberTesting; i++) {
     assert(fgets(line, BUFLEN, solutionFile) != NULL);
     assert(sscanf(line, "%d", &class) == 1);
 
-    if (class == dataset->classifyClasses[i])
+    if (class == dataset->testingClasses[i])
       right++;
     else
       wrong++;

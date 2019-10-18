@@ -19,25 +19,24 @@
  * structures are declared here
  */
 typedef struct Dataset_ {
-  int numberControl, numberClassify, numberFeatures, numberClasses;
+  int numberTraining, numberTesting, numberFeatures, numberClasses;
 
-  // control set
-  float **controlSamples;
-  int    *controlClasses;
+  // training subset
+  float **trainingSamples;
+  int    *trainingClasses;
 
-  // classify set
-  float **classifySamples;
-  int    *classifyClasses;
+  // testing subset
+  float **testingSamples;
+  int    *testingClasses;
 } Dataset;
 
 /*
  * functions are declared here
  */
-Dataset *initDataset(int numberControl, int numberClassify, int numberFeatures, int numberClasses);
-Dataset *loadDataset(int numberControl, int numberClassify, int numberFeatures, int numberClasses, char *inputFilename);
+Dataset *initDataset(int numberTraining, int numberTesting, int numberFeatures, int numberClasses);
+Dataset *loadDataset(int numberTraining, int numberTesting, int numberFeatures, int numberClasses, char *inputFilename);
 int      checkDatasetIntegrity(Dataset *dataset);
-Dataset *randDataset(int numberControl, int numberClassify, int numberFeatures, int numberClasses);
-
-void destroyDataset(Dataset *dataset);
+Dataset *randDataset(int numberTraining, int numberTesting, int numberFeatures, int numberClasses);
+void     destroyDataset(Dataset *dataset);
 
 #endif

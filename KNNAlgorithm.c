@@ -2,7 +2,7 @@
 
 void knnAlgorithm(RunType runType, Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads, int profile) {
   switch(runType) {
-    case plain:       plainKnn(      dataset, numberNeighbors, distanceMetric, p, 0, dataset->numberClassify, profile); break;
+    case plain:       plainKnn(      dataset, numberNeighbors, distanceMetric, p, 0, dataset->numberTesting, profile); break;
     case multithread: multithreadKnn(dataset, numberNeighbors, distanceMetric, p, numberOfThreads                    ); break;
     default:                                                                                                                 ;
   }
@@ -14,28 +14,28 @@ void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetr
     return;
 
   // allocate auxiliar vectors just once
-  float *distances = (float *) malloc(dataset->numberControl * sizeof(float)); assert(distances != NULL);
-  int   *indexes   = (int *)   malloc(dataset->numberControl * sizeof(int)  ); assert(indexes   != NULL);
+  float *distances = (float *) malloc(dataset->numberTraining * sizeof(float)); assert(distances != NULL);
+  int   *indexes   = (int *)   malloc(dataset->numberTraining * sizeof(int)  ); assert(indexes   != NULL);
   int   *classes   = (int *)   malloc(dataset->numberClasses * sizeof(int)  ); assert(classes   != NULL);
 
   // profiling flag
   int profile_once = profile;
   struct timeval startDistance, endDistance, startKnn, endKnn, startLabel, endLabel;
 
-  // calculate distances from all classify samples to all control samples
+  // calculate distances from all testing samples to all training samples
   for (int i = firstSample; i < lastSample; i++) {
     if (profile_once)
       gettimeofday(&startDistance, NULL);
 
-    // initialize indexes array and calculate distance from one classify samples to all control samples
-    for (int j = 0; j < dataset->numberControl; j++) {
+    // initialize indexes array and calculate distance from one testing samples to all training samples
+    for (int j = 0; j < dataset->numberTraining; j++) {
       indexes[j]   = j;
-      distances[j] = (distanceMetric == ssd)       ? sumOfSquareDifferences(dataset->controlSamples[j], dataset->classifySamples[i], dataset->numberFeatures) :
-                     (distanceMetric == euclidean) ? euclideanDistance     (dataset->controlSamples[j], dataset->classifySamples[i], dataset->numberFeatures) :
-                     (distanceMetric == cosine)    ? cosineDistance        (dataset->controlSamples[j], dataset->classifySamples[i], dataset->numberFeatures) :
-                     (distanceMetric == chiSquare) ? chiSquareDistance     (dataset->controlSamples[j], dataset->classifySamples[i], dataset->numberFeatures) :
-                     (distanceMetric == minkowsky) ? minkowskyDistance     (dataset->controlSamples[j], dataset->classifySamples[i], dataset->numberFeatures, p) :
-                                                     manhattanDistance     (dataset->controlSamples[j], dataset->classifySamples[i], dataset->numberFeatures);
+      distances[j] = (distanceMetric == ssd)       ? sumOfSquareDifferences(dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
+                     (distanceMetric == euclidean) ? euclideanDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
+                     (distanceMetric == cosine)    ? cosineDistance        (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
+                     (distanceMetric == chiSquare) ? chiSquareDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
+                     (distanceMetric == minkowsky) ? minkowskyDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures, p) :
+                                                     manhattanDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures);
     }
 
     if (profile_once) {
@@ -43,8 +43,8 @@ void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetr
       gettimeofday(&startKnn, NULL);
     }
 
-    // find the k closest control samples
-    doubleSort(distances, indexes, dataset->numberControl, numberNeighbors);
+    // find the k closest training samples
+    doubleSort(distances, indexes, dataset->numberTraining, numberNeighbors);
 
     if (profile_once) {
       gettimeofday(&endKnn, NULL);
@@ -52,7 +52,7 @@ void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetr
     }
 
     // find the class
-    dataset->classifyClasses[i] = findClass(dataset, indexes, numberNeighbors, classes);
+    dataset->testingClasses[i] = findClass(dataset, indexes, numberNeighbors, classes);
 
     if (profile_once) {
       gettimeofday(&endLabel, NULL);
@@ -88,8 +88,8 @@ void *partialKnn(void *args) {
   int numberOfThreads           = (int)            *((Arguments *) args)->argv[4];
   int threadId                  = (int)            *((Arguments *) args)->argv[5];
 
-  int firstSample = (dataset->numberClassify / numberOfThreads) * threadId;
-  int lastSample  = (threadId == numberOfThreads - 1) ? dataset->numberClassify : firstSample + (dataset->numberClassify / numberOfThreads);
+  int firstSample = (dataset->numberTesting / numberOfThreads) * threadId;
+  int lastSample  = (threadId == numberOfThreads - 1) ? dataset->numberTesting : firstSample + (dataset->numberTesting / numberOfThreads);
 
   plainKnn(dataset, numberNeighbors, distanceMetric, p, firstSample, lastSample, 0);
 
@@ -200,7 +200,7 @@ float manhattanDistance(float *sample1, float *sample2, int numberFeatures) {
   return distance;
 }
 
-void doubleSort(float *distances, int *indexes, int numberControl, int numberNeighbors) {
+void doubleSort(float *distances, int *indexes, int numberTraining, int numberNeighbors) {
   int minimum, aux;
 
   // sort the minimum k elements
@@ -208,7 +208,7 @@ void doubleSort(float *distances, int *indexes, int numberControl, int numberNei
     minimum = i;
 
     // find the next minimum value
-    for (int j = i + 1; j < numberControl; j++)
+    for (int j = i + 1; j < numberTraining; j++)
       if (distances[j] < distances[minimum])
         minimum = j;
 
@@ -233,7 +233,7 @@ int findClass(Dataset *dataset, int *indexes, int numberNeighbors, int *classes)
 
   // voting process
   for (int i = 0; i < numberNeighbors; i++)
-    classes[dataset->controlClasses[indexes[i]]]++;
+    classes[dataset->trainingClasses[indexes[i]]]++;
 
   // find the most voted class
   for (int i = 1; i < dataset->numberClasses; i++)

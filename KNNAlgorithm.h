@@ -13,7 +13,9 @@
   * structures are declared here
   */
 typedef enum RunType_ {plain, multithread} RunType;
+
 typedef enum DistanceMetric_ {ssd, euclidean, cosine, chiSquare, minkowsky, manhattan} DistanceMetric;
+
 typedef struct Arguments_ {
   int argc;
   char **argv;
@@ -34,7 +36,7 @@ float chiSquareDistance     (float *sample1, float *sample2, int numberFeatures)
 float minkowskyDistance     (float *sample1, float *sample2, int numberFeatures, int p);
 float manhattanDistance     (float *sample1, float *sample2, int numberFeatures);
 
-void doubleSort(float *distances, int *indexes, int numberControl, int numberNeighbors);
+void doubleSort(float *distances, int *indexes, int numberTraining, int numberNeighbors);
 int findClass(Dataset *dataset, int *indexes, int numberNeighbors, int *classes);
 
 float calculateAccuracy(Dataset *dataset, char *solutionFilename);
