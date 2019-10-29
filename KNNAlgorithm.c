@@ -1,62 +1,48 @@
 #include "KNNAlgorithm.h"
 
-void knnAlgorithm(RunType runType, Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads, int profile) {
-  switch(runType) {
-    case plain:       plainKnn(      dataset, numberNeighbors, distanceMetric, p, 0, dataset->numberTesting, profile); break;
-    case multithread: multithreadKnn(dataset, numberNeighbors, distanceMetric, p, numberOfThreads                    ); break;
-    default:                                                                                                                 ;
-  }
+void knnAlgorithm(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
+       if (!strcmp(knnClassifier->runType, "plain"))       plainKnn(      knnDataset, knnClassifier, 0, knnDataset->numberTesting);
+  else if (!strcmp(knnClassifier->runType, "multithread")) multithreadKnn(knnDataset, knnClassifier);
 }
 
-void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int firstSample, int lastSample, int profile) {
+void plainKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier, int firstSample, int lastSample) {
   // nothing to do
   if (firstSample == lastSample)
     return;
 
-  // allocate auxiliar vectors just once
-  float *distances = (float *) malloc(dataset->numberTraining * sizeof(float)); assert(distances != NULL);
-  int   *indexes   = (int *)   malloc(dataset->numberTraining * sizeof(int)  ); assert(indexes   != NULL);
-  int   *classes   = (int *)   malloc(dataset->numberClasses * sizeof(int)  ); assert(classes   != NULL);
+  // allocate auxiliar vectors
+  float *distances = (float *) malloc(knnDataset->numberTraining * sizeof(float)); assert(distances != NULL);
+  int   *indexes   = (int *)   malloc(knnDataset->numberTraining * sizeof(int)  ); assert(indexes   != NULL);
+  int   *classes   = (int *)   malloc(knnDataset->numberClasses  * sizeof(int)  ); assert(classes   != NULL);
 
-  // profiling flag
-  int profile_once = profile;
-  struct timeval startDistance, endDistance, startKnn, endKnn, startLabel, endLabel;
+  struct timeval startDistanceComputation, endDistanceComputation;
+  struct timeval startKNNFinder, endKNNFinder;
+  struct timeval startQueryLabelFinder, endQueryLabelFinder;
 
   // calculate distances from all testing samples to all training samples
   for (int i = firstSample; i < lastSample; i++) {
-    if (profile_once)
-      gettimeofday(&startDistance, NULL);
-
     // initialize indexes array and calculate distance from one testing samples to all training samples
-    for (int j = 0; j < dataset->numberTraining; j++) {
+    gettimeofday(&startDistanceComputation, NULL);
+    for (int j = 0; j < knnDataset->numberTraining; j++) {
       indexes[j]   = j;
-      distances[j] = (distanceMetric == ssd)       ? sumOfSquareDifferences(dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
-                     (distanceMetric == euclidean) ? euclideanDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
-                     (distanceMetric == cosine)    ? cosineDistance        (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
-                     (distanceMetric == chiSquare) ? chiSquareDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures) :
-                     (distanceMetric == minkowsky) ? minkowskyDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures, p) :
-                                                     manhattanDistance     (dataset->trainingSamples[j], dataset->testingSamples[i], dataset->numberFeatures);
+      distances[j] = knnClassifier->distanceMetric->metric(knnDataset->trainingSamples[j], knnDataset->testingSamples[i], knnDataset->numberFeatures, knnClassifier->distanceMetric);
     }
-
-    if (profile_once) {
-      gettimeofday(&endDistance, NULL);
-      gettimeofday(&startKnn, NULL);
-    }
+    gettimeofday(&endDistanceComputation, NULL);
 
     // find the k closest training samples
-    doubleSort(distances, indexes, dataset->numberTraining, numberNeighbors);
-
-    if (profile_once) {
-      gettimeofday(&endKnn, NULL);
-      gettimeofday(&startLabel, NULL);
-    }
+    gettimeofday(&startKNNFinder, NULL);
+    doubleSort(knnDataset, knnClassifier, distances, indexes);
+    gettimeofday(&endKNNFinder, NULL);
 
     // find the class
-    dataset->testingClasses[i] = findClass(dataset, indexes, numberNeighbors, classes);
+    gettimeofday(&startQueryLabelFinder, NULL);
+    knnDataset->testingClasses[i] = findClass(knnDataset, knnClassifier, indexes, classes);
+    gettimeofday(&endQueryLabelFinder, NULL);
 
-    if (profile_once) {
-      gettimeofday(&endLabel, NULL);
-      profile_once = 0;
+    if (!strcmp(knnClassifier->runType, "plain")) {
+      knnClassifier->distanceComputation += getElapsedTime(startDistanceComputation, endDistanceComputation);
+      knnClassifier->knnFinder += getElapsedTime(startKNNFinder, endKNNFinder);
+      knnClassifier->queryLabelFinder += getElapsedTime(startQueryLabelFinder, endQueryLabelFinder);
     }
   }
 
@@ -64,75 +50,51 @@ void plainKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetr
   free(classes);
   free(indexes);
   free(distances);
-
-  // profile algorithm
-  if (profile) {
-    double durationDistance = getElapsedTime(startDistance, endDistance);
-    double durationKnn      = getElapsedTime(startKnn,      endKnn);
-    double durationLabel    = getElapsedTime(startLabel,    endLabel);
-    double totalDuration    = durationDistance + durationKnn + durationLabel;
-
-    printf("========== PROFILING ==========\n");
-    printf("       Distance Comp.: %3.2f%%\n", durationDistance * 100 / totalDuration);
-    printf("           kNN Finder: %3.2f%%\n", durationKnn * 100 / totalDuration);
-    printf("   Query Label Finder: %3.2f%%\n", durationLabel * 100 / totalDuration);
-    printf("===============================\n\n");
-  }
 }
 
 void *partialKnn(void *args) {
-  Dataset *dataset              = (Dataset *)       ((Arguments *) args)->argv[0];
-  int numberNeighbors           = (int)            *((Arguments *) args)->argv[1];
-  DistanceMetric distanceMetric = (DistanceMetric) *((Arguments *) args)->argv[2];
-  int p                         = (int)            *((Arguments *) args)->argv[3];
-  int numberOfThreads           = (int)            *((Arguments *) args)->argv[4];
-  int threadId                  = (int)            *((Arguments *) args)->argv[5];
+  KNNDataset *knnDataset        = (KNNDataset *)    ((Arguments *) args)->argv[0];
+  KNNClassifier *knnClassifier  = (KNNClassifier *) ((Arguments *) args)->argv[1];
+  int threadId                  = (int)             *((Arguments *) args)->argv[2];
 
-  int firstSample = (dataset->numberTesting / numberOfThreads) * threadId;
-  int lastSample  = (threadId == numberOfThreads - 1) ? dataset->numberTesting : firstSample + (dataset->numberTesting / numberOfThreads);
+  int firstSample = (knnDataset->numberTesting / knnClassifier->numberOfThreads) * threadId;
+  int lastSample  = (threadId == knnClassifier->numberOfThreads - 1) ? knnDataset->numberTesting : firstSample + (knnDataset->numberTesting / knnClassifier->numberOfThreads);
 
-  plainKnn(dataset, numberNeighbors, distanceMetric, p, firstSample, lastSample, 0);
+  plainKnn(knnDataset, knnClassifier, firstSample, lastSample);
 
   return NULL;
 }
 
-void multithreadKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distanceMetric, int p, int numberOfThreads) {
+void multithreadKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
   pthread_t *threads;
   Arguments *args;
 
   // allocate thread handlers and arguments
-  threads = (pthread_t *) malloc(numberOfThreads * sizeof(pthread_t)); assert(threads != NULL);
-  args    = (Arguments *) malloc(numberOfThreads * sizeof(Arguments)); assert(args    != NULL);
+  threads = (pthread_t *) malloc(knnClassifier->numberOfThreads * sizeof(pthread_t)); assert(threads != NULL);
+  args    = (Arguments *) malloc(knnClassifier->numberOfThreads * sizeof(Arguments)); assert(args    != NULL);
 
   // assign arguments and launch all threads
-  for (int i = 0; i < numberOfThreads; i++) {
+  for (int i = 0; i < knnClassifier->numberOfThreads; i++) {
     // total number of arguments
-    args[i].argc = 6;
+    args[i].argc = 3;
 
     // allocate space for arguments
-    args[i].argv    = (char **) malloc(args[i].argc * sizeof(char *)        ); assert(args[i].argv    != NULL); // list of arguments
-    args[i].argv[1] = (char *)  malloc(               sizeof(int)           ); assert(args[i].argv[1] != NULL); // k nearest neighbors
-    args[i].argv[2] = (char *)  malloc(               sizeof(DistanceMetric)); assert(args[i].argv[2] != NULL); // distance metric
-    args[i].argv[3] = (char *)  malloc(               sizeof(int)           ); assert(args[i].argv[3] != NULL); // p in Minkowsky distance
-    args[i].argv[4] = (char *)  malloc(               sizeof(int)           ); assert(args[i].argv[4] != NULL); // number of threads
-    args[i].argv[5] = (char *)  malloc(               sizeof(int)           ); assert(args[i].argv[5] != NULL); // thread identifier
+    args[i].argv    = (char **) malloc(args[i].argc * sizeof(char *)); assert(args[i].argv    != NULL); // list of arguments
+    args[i].argv[2] = (char *)  malloc(               sizeof(int)   ); assert(args[i].argv[2] != NULL); // thread identifier
 
     // set thread arguments
-    args[i].argv[0]    = (char *) dataset; // dataset
-    *(args[i].argv[1]) = numberNeighbors;  // k nearest neighbors
-    *(args[i].argv[2]) = distanceMetric;   // distance metric
-    *(args[i].argv[3]) = p;                // p in Minkowsky distance
-    *(args[i].argv[4]) = numberOfThreads;  // number of threads
-    *(args[i].argv[5]) = i;                // thread identifier
+    args[i].argv[0] = (char *) knnDataset;    // knnDataset
+    args[i].argv[1] = (char *) knnClassifier; // knnClassifier
+    *(args[i].argv[2]) = i;                   // thread identifier
 
-    assert(pthread_create(&threads[i], NULL, partialKnn, (void *) &args[i]) == 0);
+    assert(!pthread_create(&threads[i], NULL, partialKnn, (void *) &args[i]));
   }
 
   // wait for all threads to finish and release allocated resources
-  for (int i = 0; i < numberOfThreads; i++) {
-    assert(pthread_join(threads[i], NULL) == 0);
+  for (int i = 0; i < knnClassifier->numberOfThreads; i++) {
+    assert(!pthread_join(threads[i], NULL));
 
-    for (int j = 1; j < args[i].argc; j++)
+    for (int j = 2; j < args[i].argc; j++)
       free(args[i].argv[j]);
 
     free(args[i].argv);
@@ -142,73 +104,15 @@ void multithreadKnn(Dataset *dataset, int numberNeighbors, DistanceMetric distan
   free(threads);
 }
 
-float sumOfSquareDifferences(float *sample1, float *sample2, int numberFeatures) {
-  float difference, distance = 0;
-
-  for (int i = 0; i < numberFeatures; i++) {
-    difference = sample1[i] - sample2[i];
-    distance += difference * difference;
-  }
-
-  return distance;
-}
-
-float euclideanDistance(float *sample1, float *sample2, int numberFeatures) {
-  return sqrt(sumOfSquareDifferences(sample1, sample2, numberFeatures));
-}
-
-float cosineDistance(float *sample1, float *sample2, int numberFeatures) {
-  float dot_product = 0, magnitude1 = 0, magnitude2 = 0;
-
-  for (int i = 0; i < numberFeatures; i++) {
-    dot_product += sample1[i] * sample2[i];
-    magnitude1 += sample1[i] * sample1[i];
-    magnitude2 += sample2[i] * sample2[i];
-  }
-
-  return dot_product / (sqrt(magnitude1) * sqrt(magnitude2));
-}
-
-float chiSquareDistance(float *sample1, float *sample2, int numberFeatures) {
-  float difference, distance = 0;
-
-  for (int i = 0; i < numberFeatures; i++) {
-    difference = sample1[i] - sample2[i];
-    distance += difference * difference / (sample1[i] + sample2[i]);
-  }
-
-  return distance;
-}
-
-float minkowskyDistance(float *sample1, float *sample2, int numberFeatures, int p) {
-  float distance = 0;
-
-  for (int i = 0; i < numberFeatures; i++) {
-    distance += powf(fabsf(sample1[i] - sample2[i]), p);
-  }
-
-  return powf(distance, 1 / p);
-}
-
-float manhattanDistance(float *sample1, float *sample2, int numberFeatures) {
-  float distance = 0;
-
-  for (int i = 0; i < numberFeatures; i++) {
-    distance += fabsf(sample1[i] - sample2[i]);
-  }
-
-  return distance;
-}
-
-void doubleSort(float *distances, int *indexes, int numberTraining, int numberNeighbors) {
+void doubleSort(KNNDataset *knnDataset, KNNClassifier *knnClassifier, float *distances, int *indexes) {
   int minimum, aux;
 
   // sort the minimum k elements
-  for (int i = 0; i < numberNeighbors; i++) {
+  for (int i = 0; i < knnClassifier->k; i++) {
     minimum = i;
 
     // find the next minimum value
-    for (int j = i + 1; j < numberTraining; j++)
+    for (int j = i + 1; j < knnDataset->numberTraining; j++)
       if (distances[j] < distances[minimum])
         minimum = j;
 
@@ -224,21 +128,42 @@ void doubleSort(float *distances, int *indexes, int numberTraining, int numberNe
   }
 }
 
-int findClass(Dataset *dataset, int *indexes, int numberNeighbors, int *classes) {
+int findClass(KNNDataset *knnDataset, KNNClassifier *knnClassifier, int *indexes, int *classes) {
   int maximum = 0;
 
   // initialize vote array
-  for (int i = 0; i < dataset->numberClasses; i++)
+  for (int i = 0; i < knnDataset->numberClasses; i++)
     classes[i] = 0;
 
   // voting process
-  for (int i = 0; i < numberNeighbors; i++)
-    classes[dataset->trainingClasses[indexes[i]]]++;
+  for (int i = 0; i < knnClassifier->k; i++)
+    classes[knnDataset->trainingClasses[indexes[i]]]++;
 
   // find the most voted class
-  for (int i = 1; i < dataset->numberClasses; i++)
+  for (int i = 1; i < knnDataset->numberClasses; i++)
     if (classes[i] > classes[maximum])
       maximum = i;
 
   return maximum;
+}
+
+float calculateAccuracy(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
+  float right = 0, wrong = 0;
+  int class;
+  char line[BUFLEN];
+
+  FILE *solutionFile = fopen(knnDataset->solutionFilename, "r");
+  assert(solutionFile != NULL);
+
+  for (int i = 0; i < knnDataset->numberTesting; i++) {
+    assert(fgets(line, BUFLEN, solutionFile) != NULL);
+    assert(sscanf(line, "%d", &class) == 1);
+
+    if (class == knnDataset->testingClasses[i])
+      right++;
+    else
+      wrong++;
+  }
+
+  return right * 100 / (right + wrong);
 }
