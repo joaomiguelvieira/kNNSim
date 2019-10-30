@@ -165,6 +165,8 @@ float calculateAccuracy(KNNDataset *knnDataset) {
       wrong++;
   }
 
+  fclose(solutionFile);
+
   return right * 100 / (right + wrong);
 }
 
