@@ -147,7 +147,7 @@ int findClass(KNNDataset *knnDataset, KNNClassifier *knnClassifier, int *indexes
   return maximum;
 }
 
-float calculateAccuracy(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
+float calculateAccuracy(KNNDataset *knnDataset) {
   float right = 0, wrong = 0;
   int class;
   char line[BUFLEN];
@@ -166,4 +166,9 @@ float calculateAccuracy(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
   }
 
   return right * 100 / (right + wrong);
+}
+
+void printKNNAccuracyResults(KNNDataset *knnDataset) {
+  printf("\033[1m[ACCURACY SUMMARY]:\033[0m\n");
+  printf("|_ \033[1maccuracy:\033[0m %.2f\n", calculateAccuracy(knnDataset));
 }

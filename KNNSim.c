@@ -7,6 +7,13 @@ int main(int argc, char const *argv[]) {
   char inputFilename[BUFLEN], solutionFilename[BUFLEN], distanceMetric[BUFLEN];
   int minkowskyP;
 
+#ifndef MACOS
+  numberOfThreads = get_nprocs();
+#else
+  size_t sizeOfInt = sizeof(int);
+  sysctlbyname("hw.logicalcpu", &numberOfThreads, &sizeOfInt, NULL, 0);
+#endif
+
   Parser *parser = newParser(argc, (char **) argv);
 
   // add arguments to the parser
@@ -16,7 +23,7 @@ int main(int argc, char const *argv[]) {
   addArgumentToParser(parser, 4,  "#classes",            "",   "integer", "number of different classes in the training subset (smaller than #training)",                 NULL,    &numberClasses,   1);
   addArgumentToParser(parser, 5,  "#neighbors",          "",   "integer", "(k) number of closest neighbors needed to testing a sample",                                  NULL,    &k,               1);
   addArgumentToParser(parser, -1, "--run-type",          "-r", "string",  "run-type plain or multithread",                                                               "plain", runType,          0);
-  addArgumentToParser(parser, -1, "--number-of-threads", "-t", "integer", "number of threads",                                                                           "12",    &numberOfThreads, 0);
+  addArgumentToParser(parser, -1, "--number-of-threads", "-t", "integer", "number of threads",                                                                           NULL,    &numberOfThreads, 0);
   addArgumentToParser(parser, -1, "--input-file",        "-f", "string",  "binary file that includes training samples, testing samples and classes",                     "\0",    inputFilename,    0);
   addArgumentToParser(parser, -1, "--solution-file",     "-s", "string",  "file with the actual classes of the classified samples that allows calculating kNN accuracy", "\0",    solutionFilename, 0);
   addArgumentToParser(parser, -1, "--distance-metric",   "-d", "string",  "distance metric ssd, euclidean, cosine, chi-square, minkowsky or manhattan",                  "ssd",   distanceMetric,   0);
@@ -59,28 +66,12 @@ int main(int argc, char const *argv[]) {
   printKNNClassifierConfiguration(knnClassifier);
   printKNNDatasetConfiguration(knnDataset);
   printPerformanceResults(knnClassifier);
+  if (strcmp(knnDataset->inputFilename, "\0") && strcmp(knnDataset->solutionFilename, "\0"))
+    printKNNAccuracyResults(knnDataset);
 
   deleteKNNClassifier(knnClassifier);
   deleteKNNDataset(knnDataset);
   deleteParser(parser);
-
-  // // print summary
-  // printf("             Hostname: %s\n", hostname);
-  // printf("             Run type: %s\n", runType == plain ? "plain" : "multithread");
-  // printf("    Number of threads: %d\n", numberOfThreads);
-  // printf("      Distance Metric: %s\n", distanceMetric == ssd       ? "ssd (sum of square differences)" : 
-  //                                       distanceMetric == euclidean ? "euclidean"                       :
-  //                                       distanceMetric == cosine    ? "cosine"                          :
-  //                                       distanceMetric == chiSquare ? "chi-square"                      :
-  //                                       distanceMetric == minkowsky ? "minkowsky"                       :
-  //                                                                     "manhattan");
-  // printf("Minkowsky p parameter: %d\n", p);
-  // printf("     Elapsed time [s]: %lf\n", getElapsedTime(startTime, endTime));
-
-  // // calculate kNN's accuracy
-  // if (inputFile && solutionFile) {
-  //   printf("         kNN accuracy: %.2f%%\n", calculateAccuracy(knnDataset, solutionFilename));
-  // }
 
   return 0;
 }

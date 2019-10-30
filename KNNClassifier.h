@@ -4,14 +4,6 @@
 #define _BSD_SOURCE
 
 #include <unistd.h>
-
-#ifndef MACOS
-#include <sys/sysinfo.h>
-#else
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#endif
-
 #include "DistanceMetrics.h"
 
 typedef struct KNNClassifier_ {

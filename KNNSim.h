@@ -11,4 +11,12 @@
 #include "Common.h"
 #include "Parser.h"
 
+// required for getting the number of threads
+#ifndef MACOS
+#include <sys/sysinfo.h>
+#else
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
+
 #endif
