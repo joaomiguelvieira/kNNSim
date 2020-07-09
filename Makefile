@@ -14,7 +14,7 @@ endif
 all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
