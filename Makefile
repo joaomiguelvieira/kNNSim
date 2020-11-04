@@ -2,11 +2,7 @@ HOSTNAME=$(shell hostname)
 
 CC=gcc
 NVCC=nvcc
-ifeq ($(CUDA), 1)
-	LD=$(NVCC)
-else
-	LD=$(CC)
-endif
+LD=$(CC)
 
 CFLAGS=-std=c99 -O3
 ifeq ($(CUDA), 1)
@@ -18,7 +14,7 @@ endif
 
 LDFLAGS=-pthread -lm
 ifeq ($(CUDA), 1)
-	LDFLAGS+=-L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart
+	LDFLAGS+=-L$(CUDA_INSTALL_DIR)/lib64 -lcuda
 endif
 
 # list of sources
