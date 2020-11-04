@@ -1,3 +1,3 @@
 extern "C" {
-#include <CudaKernels.cuh>
+#include "CudaKernels.cuh"
 }
