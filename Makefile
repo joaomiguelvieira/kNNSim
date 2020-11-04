@@ -1,6 +1,12 @@
 HOSTNAME=$(shell hostname)
 
 CC=gcc
+NVCC=nvcc
+ifeq ($(CUDA), 1)
+	LD=$(NVCC)
+else
+	LD=$(CC)
+endif
 
 CFLAGS=-std=c99 -O3
 ifeq ($(CUDA), 1)
@@ -30,13 +36,13 @@ EXE=knnsim
 all: $(SRC_C) $(SRC_CUDA) $(EXE)
 
 $(EXE): $(OBJ)
-	$(CC) $(OBJ) $(LDFLAGS) -o $@
+	$(LD) $(OBJ) $(LDFLAGS) -o $@
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 %.o: %.cu
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(NVCC) -c $(NVFLAGS) $< -o $@
 
 clean:
 	rm -rf $(OBJ) $(EXE) *.gch *.~
