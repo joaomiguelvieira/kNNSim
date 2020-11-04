@@ -6,7 +6,7 @@ else
 	CC=gcc
 endif
 
-CFLAGS=-std=c99 -O3
+CFLAGS=-std=c14 -O3
 ifeq ($(CUDA), 1)
 	CFLAGS+=-I$(CUDA_INSTALL_DIR)/include/ -DCUDA
 endif
@@ -36,8 +36,11 @@ all: $(SRC_C) $(SRC_CUDA) $(EXE)
 $(EXE): $(OBJ)
 	$(CC) $(OBJ) $(LDFLAGS) -o $@
 
-.c.o:
+%.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
+
+%.o: %.cu
+	$(NVCC) -c $(CFLAGS) $< -o $@
 
 clean:
 	rm -rf $(OBJ) $(EXE) *.gch *.~
