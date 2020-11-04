@@ -1,23 +1,46 @@
-# This is a general solution for a makefile
-
-CC=gcc
-CFLAGS=-std=c99 -O3
-LDFLAGS=-pthread -lm
-SOURCES=KNNSim.c KNNDataset.c KNNClassifier.c KNNAlgorithm.c DistanceMetrics.c Common.c Parser.c SinglyLinkedList.c Argument.c
-OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=knnsim
 HOSTNAME=$(shell hostname)
+
+ifeq ($(CUDA), 1)
+	CC=nvcc
+else
+	CC=gcc
+endif
+
+CFLAGS=-std=c99 -O3
+ifeq ($(CUDA), 1)
+	CFLAGS+=-I$(CUDA_INSTALL_DIR)/include/ -DCUDA
+endif
 ifeq ($(MACOS), 1)
     CFLAGS+=-DMACOS
 endif
 
-all: $(SOURCES) $(EXECUTABLE)
+LDFLAGS=-pthread -lm
+ifeq ($(CUDA), 1)
+	LDFLAGS+=-L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart
+endif
 
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+# list of sources
+SRC_C=KNNSim.c KNNDataset.c KNNClassifier.c KNNAlgorithm.c DistanceMetrics.c Common.c Parser.c SinglyLinkedList.c Argument.c
+SRC_CUDA=
+
+OBJ=$(SRC_C:.c=.o)
+ifeq ($(CUDA), 1)
+	OBJ+=$(SRC_CUDA:.cu=.o)
+endif
+
+# name of executable
+EXE=knnsim
+
+all: $(SRC_C) $(SRC_CUDA) $(EXE)
+
+$(EXE): $(OBJ)
+	$(CC) $(OBJ) $(LDFLAGS) -o $@
 
 .c.o:
 	$(CC) -c $(CFLAGS) $< -o $@
+
+clean:
+	rm -rf $(OBJ) $(EXE) *.gch *.~
 
 data_sets:
 	cd datasets && $(MAKE) -w
@@ -43,6 +66,3 @@ simulation_multithread:
 	./knnsim 7352  2947    561 6  4 --run-type multithread --input-file datasets/bin/5_human_activity_recognition_using_smartphones.bin > sim/multithread/5_human_activity_recognition_using_smartphones_$(HOSTNAME)_multithread.sim
 	./knnsim 30140 15071   16  2  4 --run-type multithread --input-file datasets/bin/6_bank_marketing.bin                               > sim/multithread/6_bank_marketing_$(HOSTNAME)_multithread.sim
 	./knnsim 25010 1000000 10  10 4 --run-type multithread --input-file datasets/bin/7_poker_hand.bin                                   > sim/multithread/7_poker_hand_$(HOSTNAME)_multithread.sim
-
-clean:
-	rm -rf *.o *.~ $(EXECUTABLE) *.gch
