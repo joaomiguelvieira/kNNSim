@@ -6,7 +6,7 @@ else
 	CC=gcc
 endif
 
-CFLAGS=-std=c14 -O3
+CFLAGS=-std=c++03 -O3
 ifeq ($(CUDA), 1)
 	CFLAGS+=-I$(CUDA_INSTALL_DIR)/include/ -DCUDA
 endif
