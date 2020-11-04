@@ -106,5 +106,36 @@ void printKNNDatasetConfiguration(KNNDataset *knnDataset) {
   if (strcmp(knnDataset->inputFilename, "\0"))
     printf("|_ \033[1minput file:\033[0m %s\n", knnDataset->inputFilename);
   if (strcmp(knnDataset->solutionFilename, "\0"))
-  printf("|_ \033[1msolution file:\033[0m %s\n", knnDataset->solutionFilename);
+    printf("|_ \033[1msolution file:\033[0m %s\n", knnDataset->solutionFilename);
+  if (strcmp(knnDataset->saveDataset, "\0"))
+    printf("|_ \033[1msave dataset to file:\033[0m %s.bin/%s.txt\n", knnDataset->saveDataset, knnDataset->saveDataset);
+  if (strcmp(knnDataset->saveSolution, "\0"))
+    printf("|_ \033[1msave solution to file:\033[0m %s.txt\n", knnDataset->saveSolution);
+}
+
+void saveDatasetToFile(KNNDataset *knnDataset) {
+  char binFilename[BUFLEN + 4];
+  
+  assert(sprintf(binFilename, "%s.bin", knnDataset->saveDataset) > 0);
+
+  FILE *bin = fopen(binFilename, "wb");
+
+  fwrite(knnDataset->trainingSamples[0], sizeof(float), knnDataset->numberTraining * knnDataset->numberFeatures, bin);
+  fwrite(knnDataset->testingSamples[0],  sizeof(float), knnDataset->numberTesting  * knnDataset->numberFeatures, bin);
+  fwrite(knnDataset->trainingClasses,    sizeof(int),   knnDataset->numberTraining,                              bin);
+
+  fclose(bin);
+}
+
+void saveSolutionToFile(KNNDataset *knnDataset) {
+  char solFilename[BUFLEN + 4];
+
+  assert(sprintf(solFilename, "%s.sol", knnDataset->saveSolution) > 0);
+
+  FILE *sol = fopen(solFilename, "w");
+
+  for (int i = 0; i < knnDataset->numberTesting; i++)
+    fprintf(sol, "%d\n", knnDataset->testingClasses[i]);
+
+  fclose(sol);
 }

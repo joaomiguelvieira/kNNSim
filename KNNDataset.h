@@ -23,14 +23,16 @@ typedef struct KNNDataset_ {
   int    *testingClasses;
 
   // file names
-  char inputFilename[BUFLEN], solutionFilename[BUFLEN];
+  char inputFilename[BUFLEN], solutionFilename[BUFLEN], saveDataset[BUFLEN], saveSolution[BUFLEN];
 } KNNDataset;
 
 KNNDataset *newKNNDataset(int numberTraining, int numberTesting, int numberFeatures, int numberClasses);
 void loadKNNDataset(KNNDataset *knnDataset);
-int checkKNNDatasetIntegrity(KNNDataset *kNNDataset);
+int checkKNNDatasetIntegrity(KNNDataset *knnDataset);
 void randKNNDataset(KNNDataset *knnDataset);
-void deleteKNNDataset(KNNDataset *kNNDataset);
+void deleteKNNDataset(KNNDataset *knnDataset);
 void printKNNDatasetConfiguration(KNNDataset *knnDataset);
+void saveDatasetToFile(KNNDataset *knnDataset);
+void saveSolutionToFile(KNNDataset *knnDataset);
 
 #endif

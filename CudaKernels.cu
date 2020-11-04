@@ -3,6 +3,9 @@ extern "C" {
 }
 
 void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
-	printf("\033[1m[ERROR]:\033[0m CUDA kernels not yet implemented.\n");
+	// prepare gpu launching kernels
+	assert(cudaFree(0) == cudaSuccess);
+
+	printf("\033[1m[FATAL]:\033[0m CUDA kernels not yet implemented.\n");
 	exit(-1);
 }

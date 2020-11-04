@@ -4,7 +4,7 @@ int main(int argc, char const *argv[]) {
   int numberTraining, numberTesting, numberFeatures, numberClasses, k;
   char runType[BUFLEN];
   int numberOfThreads;
-  char inputFilename[BUFLEN], solutionFilename[BUFLEN], distanceMetric[BUFLEN];
+  char inputFilename[BUFLEN], solutionFilename[BUFLEN], saveDataset[BUFLEN], saveSolution[BUFLEN], distanceMetric[BUFLEN];
   int minkowskyP;
 
 #ifndef MACOS
@@ -26,6 +26,8 @@ int main(int argc, char const *argv[]) {
   addArgumentToParser(parser, -1, "--number-of-threads", "-t", "integer", "number of threads",                                                                           NULL,    &numberOfThreads, 0);
   addArgumentToParser(parser, -1, "--input-file",        "-f", "string",  "binary file that includes training samples, testing samples and classes",                     "\0",    inputFilename,    0);
   addArgumentToParser(parser, -1, "--solution-file",     "-s", "string",  "file with the actual classes of the classified samples that allows calculating kNN accuracy", "\0",    solutionFilename, 0);
+  addArgumentToParser(parser, -1, "--save-dataset",      "-D", "string",  "save the operated dataset to a file under this designation",                                  "\0",    saveDataset,      0);
+  addArgumentToParser(parser, -1, "--save-solution",     "-S", "string",  "save the calculated solution to a file under this designation",                               "\0",    saveSolution,     0);
   addArgumentToParser(parser, -1, "--distance-metric",   "-d", "string",  "distance metric ssd, euclidean, cosine, chi-square, minkowsky or manhattan",                  "ssd",   distanceMetric,   0);
   addArgumentToParser(parser, -1, "--minkowsky-p",       "-p", "integer", "parameter p of minkowsky distance",                                                           "2",     &minkowskyP,      0);
 
@@ -43,6 +45,8 @@ int main(int argc, char const *argv[]) {
   knnClassifier->numberOfThreads = numberOfThreads;
   strcpy(knnDataset->inputFilename, inputFilename);
   strcpy(knnDataset->solutionFilename, solutionFilename);
+  strcpy(knnDataset->saveDataset, saveDataset);
+  strcpy(knnDataset->saveSolution, saveSolution);
   strcpy(knnClassifier->distanceMetric->metricName, distanceMetric);
   knnClassifier->distanceMetric->metric = getPointerToMetric(distanceMetric);
   knnClassifier->distanceMetric->p = minkowskyP;
@@ -62,6 +66,11 @@ int main(int argc, char const *argv[]) {
     knnClassifier->totalExecutionTime = knnClassifier->distanceComputation + knnClassifier->knnFinder + knnClassifier->queryLabelFinder;
   else
     knnClassifier->totalExecutionTime = getElapsedTime(startKNNAlgorithm, endKNNAlgorithm);
+
+  if (strcmp(knnDataset->saveDataset, "\0"))
+    saveDatasetToFile(knnDataset);
+  if (strcmp(knnDataset->saveSolution, "\0"))
+    saveSolutionToFile(knnDataset);
 
   printKNNClassifierConfiguration(knnClassifier);
   printKNNDatasetConfiguration(knnDataset);
