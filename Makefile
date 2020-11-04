@@ -1,12 +1,8 @@
 HOSTNAME=$(shell hostname)
 
-ifeq ($(CUDA), 1)
-	CC=nvcc
-else
-	CC=gcc
-endif
+CC=gcc
 
-CFLAGS=-std=c++03 -O3
+CFLAGS=-std=c99 -O3
 ifeq ($(CUDA), 1)
 	CFLAGS+=-I$(CUDA_INSTALL_DIR)/include/ -DCUDA
 endif
@@ -40,7 +36,7 @@ $(EXE): $(OBJ)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 %.o: %.cu
-	$(NVCC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
 	rm -rf $(OBJ) $(EXE) *.gch *.~
