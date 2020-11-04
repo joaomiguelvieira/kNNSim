@@ -1,15 +1,11 @@
+# CUDA installation directory
 CUDA_INSTALL_DIR=/usr/local/cuda
 
+# Obtain hostname for testing purposes
 HOSTNAME=$(shell hostname)
 
+# C compiler
 CC=gcc
-NVCC=nvcc
-ifeq ($(CUDA), 1)
-	LD=$(NVCC)
-else
-	LD=$(CC)
-endif
-
 CFLAGS=-std=c99 -O3
 ifeq ($(CUDA), 1)
 	CFLAGS+=-I$(CUDA_INSTALL_DIR)/include/ -DCUDA
@@ -18,6 +14,12 @@ ifeq ($(MACOS), 1)
     CFLAGS+=-DMACOS
 endif
 
+# CUDA compiler
+NVCC=nvcc
+NVFLAGS=
+
+# linker
+LD=$(CC)
 LDFLAGS=-pthread -lm
 ifeq ($(CUDA), 1)
 	LDFLAGS+=-L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart
