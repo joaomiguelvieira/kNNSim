@@ -4,7 +4,10 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-__global__
+#include "KNNDataset.h"
+#include "KNNClassifier.h"
+#include "Common.h"
+
 void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier);
 
 #endif
