@@ -27,7 +27,7 @@ endif
 
 # list of sources
 SRC_C=KNNSim.c KNNDataset.c KNNClassifier.c KNNAlgorithm.c DistanceMetrics.c Common.c Parser.c SinglyLinkedList.c Argument.c
-SRC_CUDA=
+SRC_CUDA=CudaKernels.cu
 
 OBJ=$(SRC_C:.c=.o)
 ifeq ($(CUDA), 1)
