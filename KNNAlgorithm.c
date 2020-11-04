@@ -3,6 +3,13 @@
 void knnAlgorithm(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
        if (!strcmp(knnClassifier->runType, "plain"))       plainKnn(      knnDataset, knnClassifier, 0, knnDataset->numberTesting);
   else if (!strcmp(knnClassifier->runType, "multithread")) multithreadKnn(knnDataset, knnClassifier);
+#ifdef CUDA
+  else if (!strcmp(knnClassifier->runType, "cuda"))        cudaKnn       (knnDataset, knnClassifier);
+#endif
+  else {
+    printf("\033[1m[ERROR]:\033[0m Run type %s not recognized.\n", knnClassifier->runType);
+    exit(-1);
+  }
 }
 
 void plainKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier, int firstSample, int lastSample) {
