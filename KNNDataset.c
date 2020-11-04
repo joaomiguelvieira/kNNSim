@@ -52,13 +52,14 @@ void loadKNNDataset(KNNDataset *knnDataset) {
 }
 
 int checkKNNDatasetIntegrity(KNNDataset *knnDataset) {
-  for (int i = 0; i < knnDataset->numberTraining; i++)
+  for (int i = 0; i < knnDataset->numberTraining; i++) {
     if (knnDataset->trainingClasses[i] < 0 || knnDataset->trainingClasses[i] >= knnDataset->numberClasses) {
       fprintf(stderr, "KNNDataset is corrupt! Classes have to be in the range [0, %d[. Specified class is %d.\n", knnDataset->numberClasses, knnDataset->trainingClasses[i]);
       return 1;
     }
+  }
 
-    return 0;
+  return 0;
 }
 
 void randKNNDataset(KNNDataset * knnDataset) {

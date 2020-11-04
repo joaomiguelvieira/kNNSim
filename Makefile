@@ -1,8 +1,8 @@
 # This is a general solution for a makefile
 
 CC=gcc
-CFLAGS=-c -ansi -std=c99 -Wall -O3
-LDFLAGS=-pthread -lm -Wall
+CFLAGS=-std=c99 -O3
+LDFLAGS=-pthread -lm
 SOURCES=KNNSim.c KNNDataset.c KNNClassifier.c KNNAlgorithm.c DistanceMetrics.c Common.c Parser.c SinglyLinkedList.c Argument.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=knnsim
@@ -17,7 +17,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 
 .c.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 data_sets:
 	cd datasets && $(MAKE) -w
