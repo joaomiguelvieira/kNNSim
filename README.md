@@ -11,7 +11,8 @@ This repository contains a simulator written in C language to evaluate the perfo
 The content of this repository is as follows:
 * `./` contains the source of the simulator. To compile:
   - **Linux:** type `make`;
-  - **macOS:** define `MACOS=1` as a bash variable and type `make`.
+  - **macOS:** define `MACOS=1` as a bash variable and type `make`;
+  - **If you want to compile with CUDA:** define `CUDA=1` as a bash variable and type `make`.
 * `./datasets/` contains the raw data of seven datasets that were download from [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/index.php) and precompiled binaries that can be used out of the box with kNNSim:
   * [Iris](https://archive.ics.uci.edu/ml/datasets/Iris)
   * [Wine](https://archive.ics.uci.edu/ml/datasets/Wine)
@@ -24,6 +25,7 @@ The content of this repository is as follows:
   * [Ionosphere](https://archive.ics.uci.edu/ml/datasets/ionosphere)
   * Additionally, there is source code on `./datasets/8_dataset_gen` to generate random datasets. This tool is, however, unnecessary since kNNSim generates random datasets natively whenever a binary file is not provided.
 * `./results/` contains some experimental results extracted from several runnings on different systems.
+* `./scripts/` contains some scripts used to process the results of the simulator.
 
 ## Usage
 
@@ -36,10 +38,12 @@ To know how to use kNNSim, just type `./knnsim -h` after compiling the software.
 |_ #classes: number of different classes in the training subset (smaller than #training)
 |_ #neighbors: (k) number of closest neighbors needed to testing a sample
 |_ options:
-   |_ --run-type, -r: run-type plain or multithread (default=plain)
+   |_ --run-type, -r: run-type plain, multithread or cuda (default=plain)
    |_ --number-of-threads, -t: number of threads (default=)
    |_ --input-file, -f: binary file that includes training samples, testing samples and classes (default=)
    |_ --solution-file, -s: file with the actual classes of the classified samples that allows calculating kNN accuracy (default=)
+   |_ --save-dataset, -D: save the operated dataset to a file under this designation (default=)
+   |_ --save-solution, -S: save the calculated solution to a file under this designation (default=)
    |_ --distance-metric, -d: distance metric ssd, euclidean, cosine, chi-square, minkowsky or manhattan (default=ssd)
    |_ --minkowsky-p, -p: parameter p of minkowsky distance (default=2)
 ```
