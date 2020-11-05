@@ -87,10 +87,10 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaFree(testingSamplesGPU) == cudaSuccess);
 	assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
 
-	for (int i = 0; i < knnDataset->numberTesting; i++)
-		printf("%d \n", knnDataset->testingClasses[i]);
+	//for (int i = 0; i < knnDataset->numberTesting; i++)
+	//	printf("%d \n", knnDataset->testingClasses[i]);
 
-	printf("\n");
+	//printf("\n");
 
 	printf("\033[1m[FATAL]:\033[0m CUDA kernels not yet fully implemented.\n");
 	exit(-1);
@@ -125,7 +125,7 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 		// last two parts of kNN algorithm are sequential
 		if (threadIdx.x == 0) {
 			// thread 0 double sorts distance and index arrays
-			doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
+			//doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
 
 			// thread 0 does class assignement
 			testingClassesGPU[i] = k;
@@ -145,6 +145,7 @@ float sumOfSquaredDifferencesGPU(float *sample1, float *sample2, int numberFeatu
   return distance;
 }
 
+/*
 __device__
 void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k) {
   int minimum, aux;
@@ -169,3 +170,4 @@ void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k) {
     indexes[minimum] = aux;
   }
 }
+*/
