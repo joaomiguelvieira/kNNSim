@@ -74,7 +74,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaMemcpy(trainingClassesGPU, knnDataset->trainingClasses,    knnDataset->numberTraining                              * sizeof(int),   cudaMemcpyHostToDevice) == cudaSuccess);
 
 	// launch cuda kernel
-	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses);
+	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
 	assert(cudaGetLastError() == cudaSuccess);
 
 	// retrieve results back to host
@@ -88,7 +88,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
 
 	for (int i = 0; i < knnDataset->numberTesting; i++)
-		printf("%d ", knnDataset->testingClasses[i]);
+		printf("%d \n", knnDataset->testingClasses[i]);
 
 	printf("\n");
 
@@ -97,7 +97,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 }
 
 __global__
-void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses) {
+void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
 	// calculate the indexes of the auxiliary arrays
 	float *auxDistances = ((float *) auxVector) + (blockIdx.x * 2 * numberTraining);
 	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * numberTraining));
@@ -105,20 +105,67 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 	// each block processes the testing samples whose indexes are a
 	// multiple of the block index
 	for (int i = blockIdx.x; i < numberTesting; i += gridDim.x) {
+		// calculate address of testing sample
+		float *testingSample = testingSamples + i * numberFeatures;
+
 		// each thread processes the training samples whose indexes
 		// are a multiple of the thread index
 		for (int j = threadIdx.x; j < numberTraining; j += blockDim.x) {
+			// calculate distance of training sample
+			float *trainingSample = trainingSamples + j * numberFeatures;
+
 			// calculate distance and initialize distance index array
-			auxDistances[j] = 0;
+			auxDistances[j] = sumOfSquaredDifferencesGPU(testingSample, trainingSample, numberFeatures);
 			auxIndexes[j] = j;
 		}
 
 		// sync threads
 		__syncthreads();
 
-		// thread 0 double sorts distance and index arrays
+		// last two parts of kNN algorithm are sequential
+		if (threadIdx.x == 0) {
+			// thread 0 double sorts distance and index arrays
+			doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
 
-		// thread 0 does class assignement
-		testingClasses[i] = -2;
+			// thread 0 does class assignement
+			testingClassesGPU[i] = k;
+		}
 	}
+}
+
+__device__
+float sumOfSquaredDifferencesGPU(float *sample1, float *sample2, int numberFeatures) {
+  float difference, distance = 0;
+
+  for (int i = 0; i < numberFeatures; i++) {
+    difference = sample1[i] - sample2[i];
+    distance += difference * difference;
+  }
+
+  return distance;
+}
+
+__device__
+void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k) {
+  int minimum, aux;
+
+  // sort the minimum k elements
+  for (int i = 0; i < k; i++) {
+    minimum = i;
+
+    // find the next minimum value
+    for (int j = i + 1; j < numberTraining; j++)
+      if (distances[j] < distances[minimum])
+        minimum = j;
+
+    // exchange values
+    aux = distances[i];
+    distances[i] = distances[minimum];
+    distances[minimum] = aux;
+
+    // exchange indexes
+    aux = indexes[i];
+    indexes[i] = indexes[minimum];
+    indexes[minimum] = aux;
+  }
 }
