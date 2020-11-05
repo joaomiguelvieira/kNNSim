@@ -94,8 +94,8 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 __global__
 void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses) {
 	// calculate the indexes of the auxiliary arrays
-	float *auxDistances = auxVector + (blockIdx.x * 2 * trainingSamples);
-	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * trainingSamples));
+	float *auxDistances = ((float *) auxVector) + (blockIdx.x * 2 * numberTraining);
+	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * numberTraining));
 
 	// each block processes the testing samples whose indexes are a
 	// multiple of the block index
