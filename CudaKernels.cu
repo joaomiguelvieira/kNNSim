@@ -19,7 +19,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// entire dataset
 	// TODO just make sure that the training set, the results and a
 	// minimal amount of testing samples fit in the gpu global memory
-	unsigned long long globalMemMinSize = ((knnDataset->numberTraining + knnDataset->numberTesting) * (knnDataset->numberFeatures + 1)) * sizeof(float);
+	unsigned long long globalMemMinSize = ((knnDataset->numberTraining + knnDataset->numberTesting) * knnDataset->numberFeatures) * sizeof(float) + (knnDataset->numberTraining + knnDataset->numberTesting) * sizeof(int);
 	assert(deviceProp.totalGlobalMem > globalMemMinSize);
 
 	// make sure that there is enough shared memory per block to store
@@ -32,7 +32,16 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// performance benefits
 	unsigned int threadsPerBlock = deviceProp.maxThreadsPerBlock / 2;
 
-	// number of blocks is set to 
+	// number of blocks depends on the remaining available global
+	// memory (two additional auxiliary vectors per block will be
+	// needed) and the maximum number of blocks
+	unsigned int maxNumberOfBlocks = deviceProp.maxGridSize[0];
+	unsigned long long remainingGlobalMemory = deviceProp.totalGlobalMem - globalMemMinSize;
+	unsigned long long additionalMemoryPerBlock = knnDataset->numberTesting * sizeof(float) + knnDataset->numberTesting * sizeof(int);
+	unsigned int allowedMaxNumberOfBlocks = remainingGlobalMemory / additionalMemoryPerBlock;
+
+	printf("Max number of blocks: %u\n", maxNumberOfBlocks);
+	printf("Allowed max number of blocks: %u\n", allowedMaxNumberOfBlocks);
 
 	// prepare gpu launching kernels
 	assert(cudaFree(0) == cudaSuccess);
