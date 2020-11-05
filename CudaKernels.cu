@@ -24,11 +24,6 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	unsigned long long globalMemMinSize = ((knnDataset->numberTraining + knnDataset->numberTesting) * knnDataset->numberFeatures) * sizeof(float) + (knnDataset->numberTraining + knnDataset->numberTesting) * sizeof(int);
 	assert(deviceProp.totalGlobalMem > globalMemMinSize);
 
-	// make sure that there is enough shared memory per block to store
-	// the vector of distances
-	unsigned long long minSharedMemPerBlock = knnDataset->numberTraining * sizeof(float);
-	assert(deviceProp.sharedMemPerBlock > minSharedMemPerBlock);
-
 	// number of threads per block is half of maximum number of threads
 	// per block as multiple developers suggest that leads to the best
 	// performance benefits
