@@ -128,7 +128,7 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 			doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
 
 			// thread 0 does class assignement
-			testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, auxIndexes, auxDistances);
+			testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, auxIndexes, (int *) auxDistances);
 		}
 	}
 }
