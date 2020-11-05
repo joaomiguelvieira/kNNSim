@@ -128,3 +128,15 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 		testingClasses[i] = -2;
 	}
 }
+
+__device__
+float sumOfSquaredDifferences(float *sample1, float *sample2, int numberFeatures) {
+  float difference, distance = 0;
+
+  for (int i = 0; i < numberFeatures; i++) {
+    difference = sample1[i] - sample2[i];
+    distance += difference * difference;
+  }
+
+  return distance;
+}
