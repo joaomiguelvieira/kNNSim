@@ -58,6 +58,12 @@ int main(int argc, char const *argv[]) {
     loadKNNDataset(knnDataset);
 
   struct timeval startKNNAlgorithm, endKNNAlgorithm;
+
+#ifdef CUDA
+  // initialize cuda device before using it
+  assert(cudaFree(0) == cudaSuccess);
+#endif
+
   gettimeofday(&startKNNAlgorithm, NULL);
   knnAlgorithm(knnDataset, knnClassifier);
   gettimeofday(&endKNNAlgorithm, NULL);
@@ -66,6 +72,9 @@ int main(int argc, char const *argv[]) {
     knnClassifier->totalExecutionTime = knnClassifier->distanceComputation + knnClassifier->knnFinder + knnClassifier->queryLabelFinder;
   else
     knnClassifier->totalExecutionTime = getElapsedTime(startKNNAlgorithm, endKNNAlgorithm);
+
+  if(!strcmp(knnClassifier->runType, "cuda"))
+    knnClassifier->cudaTransferTime = knnClassifier->totalExecutionTime - knnClassifier->cudaKernelTime;
 
   if (strcmp(knnDataset->saveDataset, "\0"))
     saveDatasetToFile(knnDataset);
