@@ -32,16 +32,22 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// performance benefits
 	unsigned int threadsPerBlock = deviceProp.maxThreadsPerBlock / 2;
 
-	// number of blocks depends on the remaining available global
-	// memory (two additional auxiliary vectors per block will be
-	// needed) and the maximum number of blocks
-	unsigned int maxNumberOfBlocks = deviceProp.maxGridSize[0];
+	// optimal number of blocks leads to the maximum number of threads
+	// per SM to be active
+	unsigned int blocksPerSM = deviceProp.maxThreadsPerMultiProcessor / threadsPerBlock;
+	unsigned int numberOfBlocks = _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor) * blocksPerSM;
+	
+	// the number of blocks can, however, be limited by the available
+	// amount of global memory in the device
 	unsigned long long remainingGlobalMemory = deviceProp.totalGlobalMem - globalMemMinSize;
 	unsigned long long additionalMemoryPerBlock = knnDataset->numberTesting * sizeof(float) + knnDataset->numberTesting * sizeof(int);
-	unsigned int allowedMaxNumberOfBlocks = remainingGlobalMemory / additionalMemoryPerBlock;
+	unsigned int maxNumberOfBlocks = remainingGlobalMemory / additionalMemoryPerBlock;
 
-	printf("Max number of blocks: %u\n", maxNumberOfBlocks);
-	printf("Allowed max number of blocks: %u\n", allowedMaxNumberOfBlocks);
+	if (maxNumberOfBlocks < numberOfBlocks)
+		numberOfBlocks = maxNumberOfBlocks;
+
+	printf("Number of Blocks: %u\n", numberOfBlocks);
+	printf("Threads Per Block: %u\n", threadsPerBlock);
 
 	// prepare gpu launching kernels
 	assert(cudaFree(0) == cudaSuccess);
