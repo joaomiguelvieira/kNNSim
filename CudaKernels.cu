@@ -128,7 +128,7 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 			doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
 
 			// thread 0 does class assignement
-			testingClasses[i] = k;
+			testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, auxIndexes, auxDistances);
 		}
 	}
 }
@@ -168,4 +168,24 @@ void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k) {
     indexes[i] = indexes[minimum];
     indexes[minimum] = aux;
   }
+}
+
+__device__
+int findClassGPU(int *trainingClasses, int numberClasses, int k, int *indexes, int *classes) {
+  int maximum = 0;
+
+  // initialize vote array
+  for (int i = 0; i < numberClasses; i++)
+    classes[i] = 0;
+
+  // voting process
+  for (int i = 0; i < k; i++)
+    classes[trainingClasses[indexes[i]]]++;
+
+  // find the most voted class
+  for (int i = 1; i < numberClasses; i++)
+    if (classes[i] > classes[maximum])
+      maximum = i;
+
+  return maximum;
 }

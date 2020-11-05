@@ -19,4 +19,7 @@ float sumOfSquaredDifferencesGPU(float *sample1, float *sample2, int numberFeatu
 __device__
 void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k);
 
+__device__
+int findClassGPU(int *trainingClasses, int numberClasses, int k, int *indexes, int *classes);
+
 #endif
