@@ -19,6 +19,8 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// entire dataset
 	// TODO just make sure that the training set, the results and a
 	// minimal amount of testing samples fit in the gpu global memory
+	// and transfer more testing samples at the rithm that the gpu
+	// processes the previous ones
 	unsigned long long globalMemMinSize = ((knnDataset->numberTraining + knnDataset->numberTesting) * knnDataset->numberFeatures) * sizeof(float) + (knnDataset->numberTraining + knnDataset->numberTesting) * sizeof(int);
 	assert(deviceProp.totalGlobalMem > globalMemMinSize);
 
@@ -46,12 +48,71 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	if (maxNumberOfBlocks < numberOfBlocks)
 		numberOfBlocks = maxNumberOfBlocks;
 
-	printf("Number of Blocks: %u\n", numberOfBlocks);
-	printf("Threads Per Block: %u\n", threadsPerBlock);
+	// assign the calculated properties to the classifier
+	knnClassifier->cudaNumberOfBlocks = numberOfBlocks;
+	knnClassifier->cudaThreadsPerBlock = threadsPerBlock;
 
-	// prepare gpu launching kernels
-	assert(cudaFree(0) == cudaSuccess);
+	// allocate memory in the device
+	float *trainingSamplesGPU, *testingSamplesGPU, *auxVectorGPU;
+	int *trainingClassesGPU, *testingClassesGPU;
 
-	printf("\033[1m[FATAL]:\033[0m CUDA kernels not yet implemented.\n");
+	// allocate operands
+	assert(cudaMalloc((void **) &trainingSamplesGPU, knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
+	assert(cudaMalloc((void **) &testingSamplesGPU,  knnDataset->numberTesting  * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
+	assert(cudaMalloc((void **) &trainingClassesGPU, knnDataset->numberTraining                                sizeof(int))   == cudaSuccess);
+
+	// alloocate result vector
+	assert(cudaMalloc((void **) &testingClassesGPU, knnDataset->numberTesting * sizeof(int)) == cudaSuccess);
+
+	// allocate auxiliary vector
+	assert(cudaMalloc((void **) &auxVectorGPU, knnDataset->numberTraining * numberOfBlocks * 2 * sizeof(float)) == cudaSuccess);
+
+	// copy operands to the device
+	assert(cudaMemCpy(trainingSamplesGPU, knnDataset->trainingSamples[0], knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float), cudaMemcpyHostToDevice) == cudaSuccess);
+	assert(cudaMemCpy(testingSamplesGPU,  knnDataset->testingSamples[0],  knnDataset->numberTesting  * knnDataset->numberFeatures * sizeof(float), cudaMemcpyHostToDevice) == cudaSuccess);
+	assert(cudaMemCpy(trainingClassesGPU, knnDataset->trainingClasses,    knnDataset->numberTraining                              * sizeof(int),   cudaMemcpyHostToDevice) == cudaSuccess);
+
+	// launch cuda kernel
+	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset>numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses);
+	assert(cudaGetLastError() == cudaSuccess);
+
+	// retrieve results back to host
+	assert(cudaMemCpy(knnDataset->testingClasses, testingClassesGPU, knnDataset->numberTesting * sizeof(int), cudaMemcpyDeviceToHost) == cudaSuccess);
+
+	// free device memory
+	assert(cudaFree(auxVectorGPU) == cudaSuccess);
+	assert(cudaFree(testingClassesGPU) == cudaSuccess);
+	assert(cudaFree(trainingClassesGPU) == cudaSuccess);
+	assert(cudaFree(testingSamplesGPU) == cudaSuccess);
+	assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
+
+	printf("\033[1m[FATAL]:\033[0m CUDA kernels not yet fully implemented.\n");
 	exit(-1);
+}
+
+__global__
+void cudaKnnKernel(float *trainingSamples, float *trainingClasses, float *testingSamples, float *testingClasses, float *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses) {
+	// calculate the indexes of the auxiliary arrays
+	float *auxDistances = auxVector + (blockIdx.x * 2 * trainingSamples);
+	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * trainingSamples));
+
+	// each block processes the testing samples whose indexes are a
+	// multiple of the block index
+	for (int i = blockIdx.x; i < numberTesting; i += gridDim.x) {
+		// each thread processes the training samples whose indexes
+		// are a multiple of the thread index
+		for (int j = threadIdx.x; j < numberTraining; j += blockDim.x) {
+			// calculate distance and initialize distance index array
+			auxDistances[j] = 0;
+			auxIndexes[j] = j;
+		}
+
+		// sync threads
+		__syncthreads();
+
+		// thread 0 double sorts distance and index arrays
+
+		// thread 0 does class assignement
+		testingClasses[i] = -2;
+	}
 }

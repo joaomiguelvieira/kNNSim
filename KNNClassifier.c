@@ -17,6 +17,11 @@ KNNClassifier *newKNNClassifier(int k) {
   knnClassifier->queryLabelFinder    = 0;
   knnClassifier->totalExecutionTime  = 0;
 
+  // initilize cuda parameters
+  knnClassifier->cudaKernelTime = 0;
+  knnClassifier->cudaNumberOfBlocks = 0;
+  knnClassifier->cudaThreadsPerBlock = 0;
+
   // hostname
   gethostname(knnClassifier->hostname, (size_t) BUFLEN);
 

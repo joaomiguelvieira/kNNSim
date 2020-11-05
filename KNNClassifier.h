@@ -23,6 +23,11 @@ typedef struct KNNClassifier_ {
   double queryLabelFinder;
   double totalExecutionTime;
 
+  // cuda parameters
+  double cudaKernelTime;
+  unsigned int cudaNumberOfBlocks;
+  unsigned int cudaThreadsPerBlock;
+
   // hostname
   char hostname[BUFLEN];
 } KNNClassifier;
