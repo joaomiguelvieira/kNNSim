@@ -16,4 +16,7 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 __device__
 float sumOfSquaredDifferencesGPU(float *sample1, float *sample2, int numberFeatures);
 
+__device__
+void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k);
+
 #endif

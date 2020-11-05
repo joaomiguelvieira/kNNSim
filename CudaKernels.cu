@@ -88,7 +88,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
 
 	for (int i = 0; i < knnDataset->numberTesting; i++)
-		printf("%d \n", knnDataset->testingClasses[i]);
+		printf("%d ", knnDataset->testingClasses[i]);
 
 	printf("\n");
 
@@ -122,10 +122,14 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 		// sync threads
 		__syncthreads();
 
-		// thread 0 double sorts distance and index arrays
+		// last two phases of knn are sequential
+		if (threadIdx == 0) {
+			// thread 0 double sorts distance and index arrays
+			doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
 
-		// thread 0 does class assignement
-		testingClasses[i] = k;
+			// thread 0 does class assignement
+			testingClasses[i] = k;
+		}
 	}
 }
 
@@ -139,4 +143,29 @@ float sumOfSquaredDifferencesGPU(float *sample1, float *sample2, int numberFeatu
   }
 
   return distance;
+}
+
+__device__
+void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k) {
+  int minimum, aux;
+
+  // sort the minimum k elements
+  for (int i = 0; i < k; i++) {
+    minimum = i;
+
+    // find the next minimum value
+    for (int j = i + 1; j < numberTraining; j++)
+      if (distances[j] < distances[minimum])
+        minimum = j;
+
+    // exchange values
+    aux = distances[i];
+    distances[i] = distances[minimum];
+    distances[minimum] = aux;
+
+    // exchange indexes
+    aux = indexes[i];
+    indexes[i] = indexes[minimum];
+    indexes[minimum] = aux;
+  }
 }
