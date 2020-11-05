@@ -59,7 +59,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// allocate operands
 	assert(cudaMalloc((void **) &trainingSamplesGPU, knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
 	assert(cudaMalloc((void **) &testingSamplesGPU,  knnDataset->numberTesting  * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
-	assert(cudaMalloc((void **) &trainingClassesGPU, knnDataset->numberTraining                                sizeof(int))   == cudaSuccess);
+	assert(cudaMalloc((void **) &trainingClassesGPU, knnDataset->numberTraining                              * sizeof(int))   == cudaSuccess);
 
 	// alloocate result vector
 	assert(cudaMalloc((void **) &testingClassesGPU, knnDataset->numberTesting * sizeof(int)) == cudaSuccess);
