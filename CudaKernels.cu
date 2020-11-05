@@ -115,7 +115,7 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 			float *trainingSample = trainingSamples + j * numberFeatures;
 
 			// calculate distance and initialize distance index array
-			auxDistances[j] = ;
+			auxDistances[j] = sumOfSquaredDifferences(testingSample, trainingSample, numberFeatures);
 			auxIndexes[j] = j;
 		}
 
