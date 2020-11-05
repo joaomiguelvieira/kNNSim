@@ -19,7 +19,7 @@
 #include <sys/sysctl.h>
 #endif
 
-#ifndef CUDA
+#ifdef CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
 #endif
