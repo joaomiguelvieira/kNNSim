@@ -53,8 +53,9 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	knnClassifier->cudaThreadsPerBlock = threadsPerBlock;
 
 	// allocate memory in the device
-	float *trainingSamplesGPU, *testingSamplesGPU, *auxVectorGPU;
+	float *trainingSamplesGPU, *testingSamplesGPU;
 	int *trainingClassesGPU, *testingClassesGPU;
+	void *auxVectorGPU;
 
 	// allocate operands
 	assert(cudaMalloc((void **) &trainingSamplesGPU, knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
@@ -91,7 +92,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 }
 
 __global__
-void cudaKnnKernel(float *trainingSamples, float *trainingClasses, float *testingSamples, float *testingClasses, float *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses) {
+void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses) {
 	// calculate the indexes of the auxiliary arrays
 	float *auxDistances = auxVector + (blockIdx.x * 2 * trainingSamples);
 	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * trainingSamples));

@@ -11,6 +11,6 @@
 void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier);
 
 __global__
-void cudaKnnKernel(float *trainingSamples, float *trainingClasses, float *testingSamples, float *testingClasses, float *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses);
+void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses);
 
 #endif
