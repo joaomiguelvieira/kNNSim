@@ -74,7 +74,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaMemcpy(trainingClassesGPU, knnDataset->trainingClasses,    knnDataset->numberTraining                              * sizeof(int),   cudaMemcpyHostToDevice) == cudaSuccess);
 
 	// launch cuda kernel
-	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses);
+	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
 	assert(cudaGetLastError() == cudaSuccess);
 
 	// retrieve results back to host
@@ -97,7 +97,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 }
 
 __global__
-void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses) {
+void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
 	// calculate the indexes of the auxiliary arrays
 	float *auxDistances = ((float *) auxVector) + (blockIdx.x * 2 * numberTraining);
 	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * numberTraining));
@@ -125,7 +125,7 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 		// thread 0 double sorts distance and index arrays
 
 		// thread 0 does class assignement
-		testingClasses[i] = -2;
+		testingClasses[i] = k;
 	}
 }
 
