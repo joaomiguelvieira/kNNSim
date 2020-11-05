@@ -16,7 +16,7 @@ endif
 
 # CUDA compiler
 NVCC=nvcc
-NVFLAGS=
+NVFLAGS=-O3
 
 # linker
 LD=$(CC)

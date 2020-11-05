@@ -139,6 +139,9 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 			// thread 0 does class assignement
 			testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, auxIndexes, (int *) auxDistances);
 		}
+
+		// sync threads
+		__syncthreads();
 	}
 }
 
