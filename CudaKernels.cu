@@ -35,7 +35,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// optimal number of blocks leads to the maximum number of threads
 	// per SM to be active
 	unsigned int blocksPerSM = deviceProp.maxThreadsPerMultiProcessor / threadsPerBlock;
-	unsigned int numberOfBlocks = _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor) * blocksPerSM;
+	unsigned int numberOfBlocks = deviceProp.multiProcessorCount * blocksPerSM;
 	
 	// the number of blocks can, however, be limited by the available
 	// amount of global memory in the device
