@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define BUFLEN 100
+#define BUFLEN 128
 
 /*
  * functions are declared here
