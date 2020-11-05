@@ -18,12 +18,13 @@ KNNClassifier *newKNNClassifier(int k) {
   knnClassifier->totalExecutionTime  = 0;
 
   // initilize cuda parameters
-  knnClassifier->cudaDeviceName[0]    = '\0';
-  knnClassifier->cudaKernelTime       = 0;
-  knnClassifier->cudaTransferTime     = 0;
-  knnClassifier->cudaPeakGlobalMemory = 0;
-  knnClassifier->cudaNumberOfBlocks   = 0;
-  knnClassifier->cudaThreadsPerBlock  = 0;
+  knnClassifier->cudaDeviceName[0]     = '\0';
+  knnClassifier->cudaNumberOfBlocks    = 0;
+  knnClassifier->cudaThreadsPerBlock   = 0;
+  knnClassifier->cudaDeviceUtilization = 0;
+  knnClassifier->cudaKernelTime        = 0;
+  knnClassifier->cudaTransferTime      = 0;
+  knnClassifier->cudaPeakGlobalMemory  = 0;
 
   // hostname
   gethostname(knnClassifier->hostname, (size_t) BUFLEN);
@@ -46,6 +47,7 @@ void printKNNClassifierConfiguration(KNNClassifier *knnClassifier) {
     printf("   |_ \033[1m#device name:\033[0m %s\n", knnClassifier->cudaDeviceName);
     printf("   |_ \033[1m#number of blocks:\033[0m %u\n", knnClassifier->cudaNumberOfBlocks);
     printf("   |_ \033[1m#threads per block:\033[0m %u\n", knnClassifier->cudaThreadsPerBlock);
+    printf("   |_ \033[1m#theoretical device utilization:\033[0m %.2f%%\n", knnClassifier->cudaDeviceUtilization * 100);
   }
   printf("|_ \033[1mmetric:\033[0m %s\n", knnClassifier->distanceMetric->metricName);
   if (!strcmp(knnClassifier->distanceMetric->metricName, "minkowsky"))

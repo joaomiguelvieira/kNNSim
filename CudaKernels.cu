@@ -52,6 +52,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	knnClassifier->cudaPeakGlobalMemory = globalMemMinSize + numberOfBlocks * additionalMemoryPerBlock;
 	knnClassifier->cudaNumberOfBlocks = numberOfBlocks;
 	knnClassifier->cudaThreadsPerBlock = threadsPerBlock;
+	knnClassifier->cudaDeviceUtilization = numberOfBlocks * threadsPerBlock / (deviceProp.maxThreadsPerMultiProcessor * deviceProp.multiProcessorCount);
 
 	// allocate memory in the device
 	float *trainingSamplesGPU, *testingSamplesGPU;

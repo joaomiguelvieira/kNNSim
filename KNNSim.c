@@ -47,6 +47,10 @@ int main(int argc, char const *argv[]) {
   strcpy(knnDataset->solutionFilename, solutionFilename);
   strcpy(knnDataset->saveDataset, saveDataset);
   strcpy(knnDataset->saveSolution, saveSolution);
+  if (!strcmp(runType, "cuda") && strcmp(distanceMetric, "ssd")) {
+    printf("\033[1m[WARNING]\033[0m distance metric %s not available when using cuda acceleration (using ssd instead)\n", distanceMetric);
+    sprintf(distanceMetric, "ssd");
+  }
   strcpy(knnClassifier->distanceMetric->metricName, distanceMetric);
   knnClassifier->distanceMetric->metric = getPointerToMetric(distanceMetric);
   knnClassifier->distanceMetric->p = minkowskyP;

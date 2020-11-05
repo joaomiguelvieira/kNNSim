@@ -25,10 +25,11 @@ typedef struct KNNClassifier_ {
 
   // cuda parameters
   char cudaDeviceName[BUFLEN];
-  double cudaKernelTime, cudaTransferTime;
-  unsigned long long cudaPeakGlobalMemory;
   unsigned int cudaNumberOfBlocks;
   unsigned int cudaThreadsPerBlock;
+  float cudaDeviceUtilization;
+  double cudaKernelTime, cudaTransferTime;
+  unsigned long long cudaPeakGlobalMemory;
 
   // hostname
   char hostname[BUFLEN];
