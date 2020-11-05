@@ -74,7 +74,7 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaMemcpy(trainingClassesGPU, knnDataset->trainingClasses,    knnDataset->numberTraining                              * sizeof(int),   cudaMemcpyHostToDevice) == cudaSuccess);
 
 	// launch cuda kernel
-	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
+	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses);
 	assert(cudaGetLastError() == cudaSuccess);
 
 	// retrieve results back to host
@@ -87,12 +87,17 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaFree(testingSamplesGPU) == cudaSuccess);
 	assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
 
+	for (int i = 0; i < knnDataset->numberTesting; i++)
+		printf("%d \n", knnDataset->testingClasses[i]);
+
+	printf("\n");
+
 	printf("\033[1m[FATAL]:\033[0m CUDA kernels not yet fully implemented.\n");
 	exit(-1);
 }
 
 __global__
-void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
+void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses) {
 	// calculate the indexes of the auxiliary arrays
 	float *auxDistances = ((float *) auxVector) + (blockIdx.x * 2 * numberTraining);
 	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * numberTraining));
@@ -110,31 +115,16 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 			float *trainingSample = trainingSamples + j * numberFeatures;
 
 			// calculate distance and initialize distance index array
-			auxDistances[j] = sumOfSquaredDifferencesGPU(testingSample, trainingSample, numberFeatures);
+			auxDistances[j] = ;
 			auxIndexes[j] = j;
 		}
 
 		// sync threads
 		__syncthreads();
 
-		// last two phases of knn algorithm are sequential
-		if (threadIdx.x == 0) {
-			// thread 0 double sorts distance and index arrays
+		// thread 0 double sorts distance and index arrays
 
-			// thread 0 does class assignement
-			testingClasses[i] = -2;
-		}
+		// thread 0 does class assignement
+		testingClasses[i] = -2;
 	}
-}
-
-__device__
-float sumOfSquaredDifferencesGPU(float *sample1, float *sample2, int numberFeatures) {
-  float difference, distance = 0;
-
-  for (int i = 0; i < numberFeatures; i++) {
-    difference = sample1[i] - sample2[i];
-    distance += difference * difference;
-  }
-
-  return distance;
 }
