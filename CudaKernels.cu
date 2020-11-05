@@ -123,7 +123,7 @@ void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingS
 		__syncthreads();
 
 		// last two phases of knn are sequential
-		if (threadIdx == 0) {
+		if (threadIdx.x == 0) {
 			// thread 0 double sorts distance and index arrays
 			doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
 
