@@ -87,6 +87,11 @@ void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaFree(testingSamplesGPU) == cudaSuccess);
 	assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
 
+	for (int i = 0; i < knnDataset->numberTesting; i++)
+		printf("%d ", knnDataset->testingClasses[i]);
+
+	printf("\n");
+
 	printf("\033[1m[FATAL]:\033[0m CUDA kernels not yet fully implemented.\n");
 	exit(-1);
 }
