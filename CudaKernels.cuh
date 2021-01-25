@@ -22,4 +22,6 @@ void doubleSortGPU(float *distances, int *indexes, int numberTraining, int k);
 __device__
 int findClassGPU(int *trainingClasses, int numberClasses, int k, int *indexes, int *classes);
 
+void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier);
+
 #endif

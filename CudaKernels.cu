@@ -17,10 +17,6 @@ void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 
 	// make sure that the device has enough global memory to store the
 	// entire dataset
-	// TODO just make sure that the training set, the results and a
-	// minimal amount of testing samples fit in the gpu global memory
-	// and transfer more testing samples at the rithm that the gpu
-	// processes the previous ones
 	unsigned long long globalMemMinSize = ((knnDataset->numberTraining + knnDataset->numberTesting) * knnDataset->numberFeatures) * sizeof(float) + (knnDataset->numberTraining + knnDataset->numberTesting) * sizeof(int);
 	assert(deviceProp.totalGlobalMem > globalMemMinSize);
 
@@ -37,13 +33,13 @@ void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// the number of blocks can, however, be limited by the available
 	// amount of global memory in the device
 	unsigned long long remainingGlobalMemory = deviceProp.totalGlobalMem - globalMemMinSize;
-	unsigned long long additionalMemoryPerBlock = knnDataset->numberTesting * sizeof(float) + knnDataset->numberTesting * sizeof(int);
+	unsigned long long additionalMemoryPerBlock = knnDataset->numberTraining * sizeof(float) + knnDataset->numberTraining * sizeof(int);
 	unsigned int maxNumberOfBlocks = remainingGlobalMemory / additionalMemoryPerBlock;
 
 	if (maxNumberOfBlocks < numberOfBlocks)
 		numberOfBlocks = maxNumberOfBlocks;
 
-	// make sure that there is enough remaining global memory to lauch
+	// make sure that there is enough remaining global memory to launch
 	// at least one block
 	assert(numberOfBlocks > 0);
 
@@ -64,7 +60,7 @@ void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	assert(cudaMalloc((void **) &testingSamplesGPU,  knnDataset->numberTesting  * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
 	assert(cudaMalloc((void **) &trainingClassesGPU, knnDataset->numberTraining                              * sizeof(int))   == cudaSuccess);
 
-	// alloocate result vector
+	// allocate result vector
 	assert(cudaMalloc((void **) &testingClassesGPU, knnDataset->numberTesting * sizeof(int)) == cudaSuccess);
 
 	// allocate auxiliary vector
@@ -213,3 +209,93 @@ int findClassGPU(int *trainingClasses, int numberClasses, int k, int *indexes, i
  * vector. Finally, the thread with the index 0 sorts the vector and
  * determines the closest k samples.
  * */
+void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
+    // get properties of cuda device 0
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceProperties(&deviceProp, 0);
+
+    // make sure that the device has enough global memory to store the
+    // entire dataset
+    unsigned long long globalMemMinSize = ((knnDataset->numberTraining + knnDataset->numberTesting) * knnDataset->numberFeatures) * sizeof(float) + (knnDataset->numberTraining + knnDataset->numberTesting) * sizeof(int);
+    assert(deviceProp.totalGlobalMem > globalMemMinSize);
+
+    // number of threads per block is half of maximum number of threads
+    // per block as multiple developers suggest that leads to the best
+    // performance benefits
+    unsigned int threadsPerBlock = deviceProp.maxThreadsPerBlock / 2;
+
+    // optimal number of blocks leads to the maximum number of threads
+    // per SM to be active
+    unsigned int blocksPerSM = deviceProp.maxThreadsPerMultiProcessor / threadsPerBlock;
+    unsigned int numberOfBlocks = deviceProp.multiProcessorCount * blocksPerSM;
+
+    // the number of blocks can, however, be limited by the available
+    // amount of global memory in the device
+    unsigned long long remainingGlobalMemory = deviceProp.totalGlobalMem - globalMemMinSize;
+    unsigned long long additionalMemoryPerBlock = knnDataset->numberTraining * sizeof(float) + knnDataset->numberTraining * sizeof(int);
+    unsigned int maxNumberOfBlocks = remainingGlobalMemory / additionalMemoryPerBlock;
+
+    if (maxNumberOfBlocks < numberOfBlocks)
+        numberOfBlocks = maxNumberOfBlocks;
+
+    // make sure that there is enough remaining global memory to launch
+    // at least one block
+    assert(numberOfBlocks > 0);
+
+    // assign the calculated properties to the classifier
+    strcpy(knnClassifier->cudaDeviceName, deviceProp.name);
+    knnClassifier->cudaPeakGlobalMemory = globalMemMinSize + numberOfBlocks * additionalMemoryPerBlock;
+    knnClassifier->cudaNumberOfBlocks = numberOfBlocks;
+    knnClassifier->cudaThreadsPerBlock = threadsPerBlock;
+    knnClassifier->cudaDeviceUtilization = numberOfBlocks * threadsPerBlock / (deviceProp.maxThreadsPerMultiProcessor * deviceProp.multiProcessorCount);
+
+    // allocate memory in the device
+    float *trainingSamplesGPU, *testingSamplesGPU;
+    int *trainingClassesGPU, *testingClassesGPU;
+    void *auxVectorGPU;
+
+    // allocate operands
+    assert(cudaMalloc((void **) &trainingSamplesGPU, knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
+    assert(cudaMalloc((void **) &testingSamplesGPU,  knnDataset->numberTesting  * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
+    assert(cudaMalloc((void **) &trainingClassesGPU, knnDataset->numberTraining                              * sizeof(int))   == cudaSuccess);
+
+    // alloocate result vector
+    assert(cudaMalloc((void **) &testingClassesGPU, knnDataset->numberTesting * sizeof(int)) == cudaSuccess);
+
+    // allocate auxiliary vector
+    assert(cudaMalloc((void **) &auxVectorGPU, knnDataset->numberTraining * numberOfBlocks * 2 * sizeof(float)) == cudaSuccess);
+
+    // copy operands to the device
+    assert(cudaMemcpy(trainingSamplesGPU, knnDataset->trainingSamples[0], knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float), cudaMemcpyHostToDevice) == cudaSuccess);
+    assert(cudaMemcpy(testingSamplesGPU,  knnDataset->testingSamples[0],  knnDataset->numberTesting  * knnDataset->numberFeatures * sizeof(float), cudaMemcpyHostToDevice) == cudaSuccess);
+    assert(cudaMemcpy(trainingClassesGPU, knnDataset->trainingClasses,    knnDataset->numberTraining                              * sizeof(int),   cudaMemcpyHostToDevice) == cudaSuccess);
+
+    // measure cuda kernel time
+    cudaEvent_t cudaKernelStart, cudaKernelStop;
+    assert(cudaEventCreate(&cudaKernelStart) == cudaSuccess);
+    assert(cudaEventCreate(&cudaKernelStop) == cudaSuccess);
+
+    // launch cuda kernel
+    assert(cudaEventRecord(cudaKernelStart) == cudaSuccess);
+    cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
+    assert(cudaEventRecord(cudaKernelStop) == cudaSuccess);
+
+    // assign cuda kernel time to the classifier
+    assert(cudaEventSynchronize(cudaKernelStop) == cudaSuccess);
+    float cudaElapsedMs;
+    assert(cudaEventElapsedTime(&cudaElapsedMs, cudaKernelStart, cudaKernelStop) == cudaSuccess);
+    knnClassifier->cudaKernelTime = cudaElapsedMs / 1000;
+
+    // check if any errors have occured
+    assert(cudaGetLastError() == cudaSuccess);
+
+    // retrieve results back to host
+    assert(cudaMemcpy(knnDataset->testingClasses, testingClassesGPU, knnDataset->numberTesting * sizeof(int), cudaMemcpyDeviceToHost) == cudaSuccess);
+
+    // cleanup
+    assert(cudaFree(auxVectorGPU) == cudaSuccess);
+    assert(cudaFree(testingClassesGPU) == cudaSuccess);
+    assert(cudaFree(trainingClassesGPU) == cudaSuccess);
+    assert(cudaFree(testingSamplesGPU) == cudaSuccess);
+    assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
+}
