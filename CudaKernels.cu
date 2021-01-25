@@ -264,11 +264,9 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     assert(cudaEventCreate(&cudaKernelStart) == cudaSuccess);
     assert(cudaEventCreate(&cudaKernelStop) == cudaSuccess);
 
-    exit(-1);
-
     // launch cuda kernel
     assert(cudaEventRecord(cudaKernelStart) == cudaSuccess);
-    cudaKnnKernel2<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
+    cudaKnnKernel2<<<numberOfBlocks, threadsPerBlock, requiredSharedMemoryPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
     assert(cudaEventRecord(cudaKernelStop) == cudaSuccess);
 
     // assign cuda kernel time to the classifier
@@ -290,7 +288,40 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
 }
 
+extern __shared__ float aux[];
+
 __global__
 void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
+    /*// each block processes the testing samples whose indexes are a
+    // multiple of the block index
+    for (int i = blockIdx.x; i < numberTesting; i += gridDim.x) {
+        // calculate address of testing sample
+        float *testingSample = testingSamples + i * numberFeatures;
 
+        // each thread processes the training samples whose indexes
+        // are a multiple of the thread index
+        for (int j = threadIdx.x; j < numberTraining; j += blockDim.x) {
+            // calculate distance of training sample
+            float *trainingSample = trainingSamples + j * numberFeatures;
+
+            // calculate distance and initialize distance index array
+            auxDistances[j] = sumOfSquaredDifferencesGPU(testingSample, trainingSample, numberFeatures);
+            auxIndexes[j] = j;
+        }
+
+        // sync threads
+        __syncthreads();
+
+        // last two phases of knn are sequential
+        if (threadIdx.x == 0) {
+            // thread 0 double sorts distance and index arrays
+            doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
+
+            // thread 0 does class assignement
+            testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, auxIndexes, (int *) auxDistances);
+        }
+
+        // sync threads
+        __syncthreads();
+    }*/
 }
