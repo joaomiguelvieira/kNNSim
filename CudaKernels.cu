@@ -338,7 +338,7 @@ void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testing
 
 __device__
 int getMaxDistance(float* vector, int length) {
-    float max = 0;
+    int max = 0;
     for (int i = 1; i < length; i++)
         if (vector[i] > vector[max])
             max = i;
