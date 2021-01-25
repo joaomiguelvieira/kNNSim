@@ -232,26 +232,16 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     // the number of blocks can, however, be limited by the available
     // amount of shared memory in the device
     unsigned long long requiredSharedMemoryPerThread = knnClassifier->k * (sizeof(float) + sizeof(int));
-    unsigned long long requiredSharedMemoryPerBlock = requiredSharedMemoryPerThread * threadPerBlock;
+    unsigned long long requiredSharedMemoryPerBlock = requiredSharedMemoryPerThread * threadsPerBlock;
     assert(requiredSharedMemoryPerBlock < deviceProp.sharedMemPerBlock);
 
     printf("No problem seemed to occur");
 
     exit(-1);
 
-    unsigned long long additionalMemoryPerBlock = knnDataset->numberTraining * sizeof(float) + knnDataset->numberTraining * sizeof(int);
-    unsigned int maxNumberOfBlocks = remainingGlobalMemory / additionalMemoryPerBlock;
-
-    if (maxNumberOfBlocks < numberOfBlocks)
-        numberOfBlocks = maxNumberOfBlocks;
-
-    // make sure that there is enough remaining global memory to launch
-    // at least one block
-    assert(numberOfBlocks > 0);
-
     // assign the calculated properties to the classifier
     strcpy(knnClassifier->cudaDeviceName, deviceProp.name);
-    knnClassifier->cudaPeakGlobalMemory = globalMemMinSize + numberOfBlocks * additionalMemoryPerBlock;
+    knnClassifier->cudaPeakGlobalMemory = globalMemMinSize;
     knnClassifier->cudaNumberOfBlocks = numberOfBlocks;
     knnClassifier->cudaThreadsPerBlock = threadsPerBlock;
     knnClassifier->cudaDeviceUtilization = numberOfBlocks * threadsPerBlock / (deviceProp.maxThreadsPerMultiProcessor * deviceProp.multiProcessorCount);
@@ -259,18 +249,14 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     // allocate memory in the device
     float *trainingSamplesGPU, *testingSamplesGPU;
     int *trainingClassesGPU, *testingClassesGPU;
-    void *auxVectorGPU;
 
     // allocate operands
     assert(cudaMalloc((void **) &trainingSamplesGPU, knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
     assert(cudaMalloc((void **) &testingSamplesGPU,  knnDataset->numberTesting  * knnDataset->numberFeatures * sizeof(float)) == cudaSuccess);
     assert(cudaMalloc((void **) &trainingClassesGPU, knnDataset->numberTraining                              * sizeof(int))   == cudaSuccess);
 
-    // alloocate result vector
+    // allocate result vector
     assert(cudaMalloc((void **) &testingClassesGPU, knnDataset->numberTesting * sizeof(int)) == cudaSuccess);
-
-    // allocate auxiliary vector
-    assert(cudaMalloc((void **) &auxVectorGPU, knnDataset->numberTraining * numberOfBlocks * 2 * sizeof(float)) == cudaSuccess);
 
     // copy operands to the device
     assert(cudaMemcpy(trainingSamplesGPU, knnDataset->trainingSamples[0], knnDataset->numberTraining * knnDataset->numberFeatures * sizeof(float), cudaMemcpyHostToDevice) == cudaSuccess);
@@ -284,7 +270,7 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 
     // launch cuda kernel
     assert(cudaEventRecord(cudaKernelStart) == cudaSuccess);
-    cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
+    //cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
     assert(cudaEventRecord(cudaKernelStop) == cudaSuccess);
 
     // assign cuda kernel time to the classifier
@@ -293,14 +279,13 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     assert(cudaEventElapsedTime(&cudaElapsedMs, cudaKernelStart, cudaKernelStop) == cudaSuccess);
     knnClassifier->cudaKernelTime = cudaElapsedMs / 1000;
 
-    // check if any errors have occured
+    // check if any errors have occurred
     assert(cudaGetLastError() == cudaSuccess);
 
     // retrieve results back to host
     assert(cudaMemcpy(knnDataset->testingClasses, testingClassesGPU, knnDataset->numberTesting * sizeof(int), cudaMemcpyDeviceToHost) == cudaSuccess);
 
     // cleanup
-    assert(cudaFree(auxVectorGPU) == cudaSuccess);
     assert(cudaFree(testingClassesGPU) == cudaSuccess);
     assert(cudaFree(trainingClassesGPU) == cudaSuccess);
     assert(cudaFree(testingSamplesGPU) == cudaSuccess);
