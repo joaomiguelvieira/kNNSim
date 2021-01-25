@@ -22,7 +22,7 @@ int main(int argc, char const *argv[]) {
   addArgumentToParser(parser, 3,  "#features",           "",   "integer", "number of features per each sample",                                                          NULL,    &numberFeatures,  1);
   addArgumentToParser(parser, 4,  "#classes",            "",   "integer", "number of different classes in the training subset (smaller than #training)",                 NULL,    &numberClasses,   1);
   addArgumentToParser(parser, 5,  "#neighbors",          "",   "integer", "(k) number of closest neighbors needed to testing a sample",                                  NULL,    &k,               1);
-  addArgumentToParser(parser, -1, "--run-type",          "-r", "string",  "run-type plain, multithread or cuda",                                                         "plain", runType,          0);
+  addArgumentToParser(parser, -1, "--run-type",          "-r", "string",  "run-type plain, multithread or cuda<#routine>",                                               "plain", runType,          0);
   addArgumentToParser(parser, -1, "--number-of-threads", "-t", "integer", "number of threads",                                                                           NULL,    &numberOfThreads, 0);
   addArgumentToParser(parser, -1, "--input-file",        "-f", "string",  "binary file that includes training samples, testing samples and classes",                     "\0",    inputFilename,    0);
   addArgumentToParser(parser, -1, "--solution-file",     "-s", "string",  "file with the actual classes of the classified samples that allows calculating kNN accuracy", "\0",    solutionFilename, 0);

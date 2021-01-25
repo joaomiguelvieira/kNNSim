@@ -230,8 +230,15 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     unsigned int numberOfBlocks = deviceProp.multiProcessorCount * blocksPerSM;
 
     // the number of blocks can, however, be limited by the available
-    // amount of global memory in the device
-    unsigned long long remainingGlobalMemory = deviceProp.totalGlobalMem - globalMemMinSize;
+    // amount of shared memory in the device
+    unsigned long long requiredSharedMemoryPerThread = knnClassifier->k * (sizeof(float) + sizeof(int));
+    unsigned long long requiredSharedMemoryPerBlock = requiredSharedMemoryPerThread * threadPerBlock;
+    assert(requiredSharedMemoryPerBlock < deviceProp.sharedMemPerBlock);
+
+    printf("No problem seemed to occur");
+
+    exit(-1);
+
     unsigned long long additionalMemoryPerBlock = knnDataset->numberTraining * sizeof(float) + knnDataset->numberTraining * sizeof(int);
     unsigned int maxNumberOfBlocks = remainingGlobalMemory / additionalMemoryPerBlock;
 
