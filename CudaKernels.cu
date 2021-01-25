@@ -331,10 +331,10 @@ void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testing
         // last two phases of knn are sequential
         if (threadIdx.x == 0) {
             // thread 0 double sorts distance and index arrays
-            doubleSortGPU(&aux[blockDim.x * k], &aux[0], blockDim.x * k, k);
+            doubleSortGPU(&aux[blockDim.x * k], (int *) &aux[0], blockDim.x * k, k);
 
             // thread 0 does class assignment
-            testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, &aux[0], (int *) &aux[blockDim.x * k]);
+            testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, (int *) &aux[0], (int *) &aux[blockDim.x * k]);
         }
 
         // sync threads
