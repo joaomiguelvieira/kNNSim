@@ -11,7 +11,7 @@
 void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier);
 
 __global__
-void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k);
+void cudaKnnKernel1(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k);
 
 __device__
 float sumOfSquaredDifferencesGPU(float *sample1, float *sample2, int numberFeatures);
@@ -23,5 +23,8 @@ __device__
 int findClassGPU(int *trainingClasses, int numberClasses, int k, int *indexes, int *classes);
 
 void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier);
+
+__global__
+void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k);
 
 #endif

@@ -78,7 +78,7 @@ void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 
 	// launch cuda kernel
 	assert(cudaEventRecord(cudaKernelStart) == cudaSuccess);
-	cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
+	cudaKnnKernel1<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
 	assert(cudaEventRecord(cudaKernelStop) == cudaSuccess);
 
 	// assign cuda kernel time to the classifier
@@ -102,7 +102,7 @@ void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 }
 
 __global__
-void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
+void cudaKnnKernel1(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
 	// calculate the indexes of the auxiliary arrays
 	float *auxDistances = ((float *) auxVector) + (blockIdx.x * 2 * numberTraining);
 	int *auxIndexes = (int *) (((int *) auxVector) + ((blockIdx.x * 2 + 1) * numberTraining));
@@ -233,18 +233,7 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     // amount of shared memory in the device
     unsigned long long requiredSharedMemoryPerThread = knnClassifier->k * (sizeof(float) + sizeof(int));
     unsigned long long requiredSharedMemoryPerBlock = requiredSharedMemoryPerThread * threadsPerBlock;
-
-    printf("knnClassifier->k: %lu\n", knnClassifier->k);
-    printf("sizeof(float): %lu\n", sizeof(float));
-    printf("sizeof(int): %lu\n", sizeof(int));
-    printf("knnClassifier->k: %lu\n", knnClassifier->k);
-    printf("requiredSharedMemoryPerThread: %lu\n", requiredSharedMemoryPerThread);
-    printf("requiredSharedMemoryPerBlock: %lu\n", requiredSharedMemoryPerBlock);
-    printf("deviceProp.sharedMemPerBlock: %lu\n", deviceProp.sharedMemPerBlock);
-
     assert(requiredSharedMemoryPerBlock < deviceProp.sharedMemPerBlock);
-
-    exit(-1);
 
     // assign the calculated properties to the classifier
     strcpy(knnClassifier->cudaDeviceName, deviceProp.name);
@@ -275,9 +264,11 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     assert(cudaEventCreate(&cudaKernelStart) == cudaSuccess);
     assert(cudaEventCreate(&cudaKernelStop) == cudaSuccess);
 
+    exit(-1);
+
     // launch cuda kernel
     assert(cudaEventRecord(cudaKernelStart) == cudaSuccess);
-    //cudaKnnKernel<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, auxVectorGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
+    cudaKnnKernel2<<<numberOfBlocks, threadsPerBlock>>>(trainingSamplesGPU, trainingClassesGPU, testingSamplesGPU, testingClassesGPU, knnDataset->numberTraining, knnDataset->numberTesting, knnDataset->numberFeatures, knnDataset->numberClasses, knnClassifier->k);
     assert(cudaEventRecord(cudaKernelStop) == cudaSuccess);
 
     // assign cuda kernel time to the classifier
@@ -297,4 +288,9 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     assert(cudaFree(trainingClassesGPU) == cudaSuccess);
     assert(cudaFree(testingSamplesGPU) == cudaSuccess);
     assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
+}
+
+__global__
+void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
+
 }
