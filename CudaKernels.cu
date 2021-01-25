@@ -3,14 +3,14 @@ extern "C" {
 }
 
 /*
-* CUDA-parallelized version of the kNN algorithm.
-* 
-* Each block is responsible for computing the distance of one or more
-* testing samples to all training samples of the dataset. Each thread 
-* within a block calculates the distance between one testing sample
-* and one or more training samples.
-* */
-void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
+ * CUDA-parallelized version of the kNN algorithm (1).
+ *
+ * Each block is responsible for computing the distance of one or more
+ * testing samples to all training samples of the dataset. Each thread
+ * within a block calculates the distance between one testing sample
+ * and one or more training samples.
+ * */
+void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
 	// get properties of cuda device 0
 	cudaDeviceProp deviceProp;
 	cudaGetDeviceProperties(&deviceProp, 0);
@@ -201,3 +201,15 @@ int findClassGPU(int *trainingClasses, int numberClasses, int k, int *indexes, i
 
   return maximum;
 }
+
+/*
+ * CUDA parallelized version of the kNN algorithm (2).
+ *
+ * Each block is responsible for computing the distance of one or more
+ * testing samples to all training samples of the dataset. Each thread
+ * within a block calculates the distance between one testing sample
+ * and one or more training samples. Then, it updates its own list of
+ * the k closest samples of the training set and keeps it on a shared
+ * vector. Finally, the thread with the index 0 sorts the vector and
+ * determines the closest k samples.
+ * */

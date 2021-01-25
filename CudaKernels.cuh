@@ -8,7 +8,7 @@
 #include "KNNClassifier.h"
 #include "Common.h"
 
-void cudaKnn(KNNDataset *knnDataset, KNNClassifier *knnClassifier);
+void cudaKnn1(KNNDataset *knnDataset, KNNClassifier *knnClassifier);
 
 __global__
 void cudaKnnKernel(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, void *auxVector, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k);
