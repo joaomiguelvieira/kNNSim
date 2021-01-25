@@ -293,7 +293,7 @@ void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testing
     extern __shared__ float aux[];
 
     int *kIndexes = &aux[threadIdx.x * k];
-    float *kDistances = &aux[blockDim.x * k + threadIdx.x * k];
+    float *kDistances = (int *) &aux[blockDim.x * k + threadIdx.x * k];
 
     /*// each block processes the testing samples whose indexes are a
     // multiple of the block index
