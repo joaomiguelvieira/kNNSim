@@ -233,6 +233,9 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     // amount of shared memory in the device
     unsigned long long requiredSharedMemoryPerThread = knnClassifier->k * (sizeof(float) + sizeof(int));
     unsigned long long requiredSharedMemoryPerBlock = requiredSharedMemoryPerThread * threadsPerBlock;
+
+    printf("Shared memory per block [bytes]: %ul\n", deviceProp.sharedMemPerBlock);
+
     assert(requiredSharedMemoryPerBlock < deviceProp.sharedMemPerBlock);
 
     printf("No problem seemed to occur");
