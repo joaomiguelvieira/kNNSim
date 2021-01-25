@@ -288,11 +288,11 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
 }
 
+extern __shared__ float aux[];
+
 __global__
 void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
-    extern __shared__ float aux[];/*
-
-    // each block processes the testing samples whose indexes are a
+    /*// each block processes the testing samples whose indexes are a
     // multiple of the block index
     for (int i = blockIdx.x; i < numberTesting; i += gridDim.x) {
         // calculate address of testing sample
