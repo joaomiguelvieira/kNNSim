@@ -132,7 +132,7 @@ void cudaKnnKernel1(float *trainingSamples, int *trainingClasses, float *testing
 			// thread 0 double sorts distance and index arrays
 			doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
 
-			// thread 0 does class assignement
+			// thread 0 does class assignment
 			testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, auxIndexes, (int *) auxDistances);
 		}
 
@@ -304,7 +304,7 @@ void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testing
         kIndexes[i] = -1;
     }
 
-    /*// each block processes the testing samples whose indexes are a
+    // each block processes the testing samples whose indexes are a
     // multiple of the block index
     for (int i = blockIdx.x; i < numberTesting; i += gridDim.x) {
         // calculate address of testing sample
@@ -316,9 +316,13 @@ void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testing
             // calculate distance of training sample
             float *trainingSample = trainingSamples + j * numberFeatures;
 
-            // calculate distance and initialize distance index array
-            auxDistances[j] = sumOfSquaredDifferencesGPU(testingSample, trainingSample, numberFeatures);
-            auxIndexes[j] = j;
+            // calculate distance and save it if closest than any of the previously saved distances
+            float distance = sumOfSquaredDifferencesGPU(testingSample, trainingSample, numberFeatures);
+            int maxDistance = getMaxDistance(kDistances, k);
+            if (kDistances[maxDistance] > distance) {
+                kIndexes[maxDistance] = j;
+                kDistances[maxDistance] = distance;
+            }
         }
 
         // sync threads
@@ -327,15 +331,15 @@ void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testing
         // last two phases of knn are sequential
         if (threadIdx.x == 0) {
             // thread 0 double sorts distance and index arrays
-            doubleSortGPU(auxDistances, auxIndexes, numberTraining, k);
+            doubleSortGPU(&aux[blockDim.x * k], &aux[0], blockDim.x * k, k);
 
-            // thread 0 does class assignement
-            testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, auxIndexes, (int *) auxDistances);
+            // thread 0 does class assignment
+            testingClasses[i] = findClassGPU(trainingClasses, numberClasses, k, &aux[0], (int *) &aux[blockDim.x * k]);
         }
 
         // sync threads
         __syncthreads();
-    }*/
+    }
 }
 
 __device__
