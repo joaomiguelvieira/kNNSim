@@ -3,6 +3,7 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <float.h>
 
 #include "KNNDataset.h"
 #include "KNNClassifier.h"
@@ -28,6 +29,6 @@ __global__
 void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k);
 
 __device__
-int getMaxDistance(float* vector, int offset, int length);
+int getMaxDistance(float* vector, int length);
 
 #endif

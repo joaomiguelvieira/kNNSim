@@ -292,8 +292,15 @@ __global__
 void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testingSamples, int *testingClasses, int numberTraining, int numberTesting, int numberFeatures, int numberClasses, int k) {
     extern __shared__ float aux[];
 
+    // calculate indexes of the k closest distances relative of this thread
     int *kIndexes = (int *) &aux[threadIdx.x * k];
     float *kDistances = &aux[blockDim.x * k + threadIdx.x * k];
+
+    // initialize vectors
+    for (int i = 0; i < k; i++) {
+        kDistances[i] = FLT_MAX;
+        kIndexes[i] = -1;
+    }
 
     /*// each block processes the testing samples whose indexes are a
     // multiple of the block index
@@ -330,6 +337,11 @@ void cudaKnnKernel2(float *trainingSamples, int *trainingClasses, float *testing
 }
 
 __device__
-int getMaxDistance(float* vector, int offset, int length) {
-    return 0;
+int getMaxDistance(float* vector, int length) {
+    float max = 0;
+    for (int i = 1; i < length; i++)
+        if (vector[i] > vector[max])
+            max = i;
+
+    return max;
 }
