@@ -286,6 +286,8 @@ void cudaKnn2(KNNDataset *knnDataset, KNNClassifier *knnClassifier) {
     assert(cudaFree(trainingClassesGPU) == cudaSuccess);
     assert(cudaFree(testingSamplesGPU) == cudaSuccess);
     assert(cudaFree(trainingSamplesGPU) == cudaSuccess);
+
+    printf("Reached end of CUDA 2!\n"); exit(0);
 }
 
 __global__
