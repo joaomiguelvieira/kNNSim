@@ -43,7 +43,7 @@ void printKNNClassifierConfiguration(KNNClassifier *knnClassifier) {
   printf("|_ \033[1mrun-type:\033[0m %s\n", knnClassifier->runType);
   if (!strcmp(knnClassifier->runType, "multithread"))
     printf("   |_ \033[1m#threads:\033[0m %d\n", knnClassifier->numberOfThreads);
-  else if (!strcmp(knnClassifier->runType, "cuda")) {
+  else if (!strncmp(knnClassifier->runType, "cuda", 4)) {
     printf("   |_ \033[1mdevice name:\033[0m %s\n", knnClassifier->cudaDeviceName);
     printf("   |_ \033[1m#blocks:\033[0m %u\n", knnClassifier->cudaNumberOfBlocks);
     printf("   |_ \033[1m#threads per block:\033[0m %u\n", knnClassifier->cudaThreadsPerBlock);
@@ -63,7 +63,7 @@ void printPerformanceResults(KNNClassifier *knnClassifier) {
     printf("   |_ \033[1mKNN finder [s]:\033[0m %f (%.2f%%)\n", knnClassifier->knnFinder, knnClassifier->knnFinder * 100 / knnClassifier->totalExecutionTime);
     printf("   |_ \033[1mquery label finder [s]:\033[0m %f (%.2f%%)\n", knnClassifier->queryLabelFinder, knnClassifier->queryLabelFinder * 100 / knnClassifier->totalExecutionTime);
   }
-  else if (!strcmp(knnClassifier->runType, "cuda")) {
+  else if (!strncmp(knnClassifier->runType, "cuda", 4)) {
     printf("   |_ \033[1mcuda kernel [s]:\033[0m %f (%.2f%%)\n", knnClassifier->cudaKernelTime, knnClassifier->cudaKernelTime * 100 / knnClassifier->totalExecutionTime);
     printf("   |_ \033[1mcuda memory transfers [s]:\033[0m %f (%.2f%%)\n", knnClassifier->cudaTransferTime, knnClassifier->cudaTransferTime * 100 / knnClassifier->totalExecutionTime);
     printf("   |_ \033[1mcuda peak global memory [MiB]:\033[0m %llu\n", knnClassifier->cudaPeakGlobalMemory / 1024 / 1024);

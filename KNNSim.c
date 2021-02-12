@@ -47,7 +47,7 @@ int main(int argc, char const *argv[]) {
   strcpy(knnDataset->solutionFilename, solutionFilename);
   strcpy(knnDataset->saveDataset, saveDataset);
   strcpy(knnDataset->saveSolution, saveSolution);
-  if (!strcmp(runType, "cuda") && strcmp(distanceMetric, "ssd")) {
+  if (!strncmp(runType, "cuda", 4) && strcmp(distanceMetric, "ssd")) {
     printf("\033[1m[WARNING]\033[0m distance metric %s not available when using cuda acceleration (using ssd instead)\n", distanceMetric);
     sprintf(distanceMetric, "ssd");
   }
@@ -77,7 +77,7 @@ int main(int argc, char const *argv[]) {
   else
     knnClassifier->totalExecutionTime = getElapsedTime(startKNNAlgorithm, endKNNAlgorithm);
 
-  if(!strcmp(knnClassifier->runType, "cuda"))
+  if(!strncmp(knnClassifier->runType, "cuda", 4))
     knnClassifier->cudaTransferTime = knnClassifier->totalExecutionTime - knnClassifier->cudaKernelTime;
 
   if (strcmp(knnDataset->saveDataset, "\0"))
